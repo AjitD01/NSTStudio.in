@@ -1,55 +1,318 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { scrollManager } from '../state/scrollStore';
-
-const CHAPTER_SPACING = 28; // Z distance between each chapter
-const TOTAL_CHAPTERS = 8;
+import { scrollManager, TOTAL_CHAPTERS } from '../state/scrollStore';
 
 /**
- * 1. Inward Depth Camera Controller:
- * Translates camera inward along Z axis smoothly.
- * Keeps camera centered on the 3D sculptures without clipping or tilting out of view.
+ * 8 Bespoke Camera View Angles (One unique vantage point per chapter)
+ * Instead of zooming linearly along Z, the camera smoothly orbits around the central straight flute.
  */
-export const InwardCamera: React.FC = () => {
+interface CameraKeyframe {
+  pos: [number, number, number];
+  target: [number, number, number];
+}
+
+const CAMERA_KEYFRAMES: CameraKeyframe[] = [
+  // 0. Prologue: Symmetrical Frontal Eye-Level Hero View (0° Azimuth)
+  { pos: [0, 0, 10.5], target: [0, 0, 0] },
+
+  // 1. Four Universes: Dynamic Quarter-Right Angle (+48° Azimuth, slightly elevated)
+  { pos: [7.8, 2.2, 7.8], target: [0, 0.2, 0] },
+
+  // 2. Logo Genesis & Lore: Pure 90° Side Profile View (focusing on tone holes & craftsmanship)
+  { pos: [10.5, -0.2, 0.5], target: [0, 0, 0] },
+
+  // 3. Atelier Savoir-Faire: Heroic Low-Angle Tilt-Up (-45° looking up the flute length)
+  { pos: [-6.5, -4.0, 7.5], target: [0, 0.8, 0] },
+
+  // 4. Selected Works: Top-Down Isometric Exhibition Angle (+55° pitch, inspection view)
+  { pos: [6.2, 7.2, 6.2], target: [0, -0.4, 0] },
+
+  // 5. Living Social Archive: 175° Reverse Perspective (view from behind the flute)
+  { pos: [-1.2, 1.8, -10.2], target: [0, 0, 0] },
+
+  // 6. Private Commission: Intimate 3/4 Studio Dialogue Angle (-35° eye-level)
+  { pos: [-7.2, 0.6, 7.2], target: [0, -0.2, 0] },
+
+  // 7. Maison Epilogue: Grand Symmetrical High Showcase Overview
+  { pos: [0, 3.8, 10.2], target: [0, 0, 0] },
+];
+
+/**
+ * 1. Multi-Angle Exhibition Camera Controller
+ * Smoothly interpolates camera position & target between chapter keyframes.
+ */
+export const OrbitExhibitionCamera: React.FC = () => {
   const { camera, pointer, size } = useThree();
-  const prevProgressRef = useRef(0);
+  const currentPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 10.5));
+  const currentTargetRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
 
   useFrame(() => {
+    // 60fps lerped virtual scroll progress (0..7)
     const progress = scrollManager.update(0.08);
-    const delta = progress - prevProgressRef.current;
-    prevProgressRef.current = progress;
 
-    // Mobile viewport adaptation: pull camera back slightly in portrait mode
-    // Laptop/desktop (size.width >= size.height) remains 100% untouched at baseZ = 10
+    // Bounded chapter keyframe indices
+    const clamped = Math.max(0, Math.min(TOTAL_CHAPTERS - 1, progress));
+    const baseIdx = Math.floor(clamped);
+    const nextIdx = Math.min(TOTAL_CHAPTERS - 1, baseIdx + 1);
+    const frac = clamped - baseIdx;
+
+    // Smooth cubic Hermite ease
+    const t = frac * frac * (3 - 2 * frac);
+
+    const kfA = CAMERA_KEYFRAMES[baseIdx];
+    const kfB = CAMERA_KEYFRAMES[nextIdx];
+
+    const targetPosA = new THREE.Vector3(...kfA.pos);
+    const targetPosB = new THREE.Vector3(...kfB.pos);
+    const interpolatedPos = new THREE.Vector3().lerpVectors(targetPosA, targetPosB, t);
+
+    const targetLookA = new THREE.Vector3(...kfA.target);
+    const targetLookB = new THREE.Vector3(...kfB.target);
+    const interpolatedLook = new THREE.Vector3().lerpVectors(targetLookA, targetLookB, t);
+
+    // Mobile portrait adaptation: pull camera back slightly so the flute & character fit phone screens
     const isPortrait = size.width < size.height;
-    const baseZ = isPortrait ? 15.0 : 10;
-    const targetZ = baseZ - progress * CHAPTER_SPACING;
-    const targetX = pointer.x * (isPortrait ? 0.3 : 0.8);
-    const targetY = pointer.y * (isPortrait ? 0.3 : 0.6);
+    if (isPortrait) {
+      interpolatedPos.multiplyScalar(1.35);
+    }
 
-    // Smooth lerp camera position
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.09);
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
+    // Subtle responsive pointer parallax
+    const parallaxScale = isPortrait ? 0.35 : 1.0;
+    interpolatedPos.x += pointer.x * 0.9 * parallaxScale;
+    interpolatedPos.y += pointer.y * 0.6 * parallaxScale;
 
-    // Subtle bank on scroll
-    camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, -delta * 0.3, 0.05);
+    // Smooth lerp to destination
+    currentPosRef.current.lerp(interpolatedPos, 0.085);
+    currentTargetRef.current.lerp(interpolatedLook, 0.085);
 
-    // Direct forward gaze into the tunnel center
-    const lookTargetZ = camera.position.z - 25;
-    camera.lookAt(targetX * 0.15, targetY * 0.15, lookTargetZ);
+    camera.position.copy(currentPosRef.current);
+    camera.lookAt(currentTargetRef.current);
   });
 
   return null;
 };
 
 /**
- * 2. Deep Tunnel Cosmic Dust & Embers:
- * Floating stars and subtle crimson embers providing spacious atmospheric depth.
+ * 2. The Central Straight Flute (Master 3D Sculpture)
+ * High-detail vertical flute anchored straight at (0, 0, 0) with crimson lacquer and gold stops.
  */
-const DeepTunnelParticles: React.FC = () => {
-  const count = 2800;
+const CentralStraightFlute: React.FC = () => {
+  const fluteGroupRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (fluteGroupRef.current) {
+      // Gentle breathing levitation hover (keeps flute straight)
+      fluteGroupRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 0.8) * 0.06;
+    }
+  });
+
+  // 6 Tone Holes coordinates
+  const toneHolePositions = useMemo(() => [0.6, 0.1, -0.4, -0.9, -1.4, -1.9], []);
+
+  // Gold Ring Band positions along the straight flute
+  const goldBands = useMemo(
+    () => [
+      { y: 3.55, r: 0.14, h: 0.12 }, // Top Crown Cap
+      { y: 2.3, r: 0.138, h: 0.08 },  // Headjoint Ferrule
+      { y: 0.95, r: 0.135, h: 0.05 }, // Upper Body Joint
+      { y: -1.05, r: 0.135, h: 0.05 },// Lower Body Joint
+      { y: -3.55, r: 0.14, h: 0.12 }, // Footjoint Ring
+    ],
+    []
+  );
+
+  return (
+    <group ref={fluteGroupRef} position={[0, 0, 0]}>
+      {/* Main Flute Body — Straight Deep Crimson Lacquer Tube */}
+      <mesh>
+        <cylinderGeometry args={[0.13, 0.13, 7.2, 64]} />
+        <meshStandardMaterial
+          color="#ff2222"
+          emissive="#550512"
+          emissiveIntensity={0.25}
+          roughness={0.18}
+          metalness={0.4}
+        />
+      </mesh>
+
+      {/* Embouchure Mouth Blow-Hole (Headjoint at Y = 2.65) */}
+      <group position={[0, 2.65, 0.12]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.045, 0.045, 0.05, 24]} />
+          <meshBasicMaterial color="#06060a" />
+        </mesh>
+        {/* Lip Plate Raised Bezel */}
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.01]}>
+          <ringGeometry args={[0.045, 0.075, 24]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.2} />
+        </mesh>
+      </group>
+
+      {/* 6 Precision Tone Holes along Front Face (facing +Z) */}
+      {toneHolePositions.map((y, idx) => (
+        <group key={idx} position={[0, y, 0.12]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.032, 0.032, 0.05, 20]} />
+            <meshBasicMaterial color="#08080c" />
+          </mesh>
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.01]}>
+            <ringGeometry args={[0.032, 0.05, 20]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.85} roughness={0.25} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Polished Gold Ring Stops & Ferrules */}
+      {goldBands.map((band, idx) => (
+        <mesh key={idx} position={[0, band.y, 0]}>
+          <cylinderGeometry args={[band.r, band.r, band.h, 48]} />
+          <meshStandardMaterial
+            color="#d4af37"
+            emissive="#4d3b14"
+            emissiveIntensity={0.3}
+            metalness={0.92}
+            roughness={0.15}
+          />
+        </mesh>
+      ))}
+
+      {/* Sacred Golden Thread spiraling around upper joint (Y = 1.1 to 2.2) */}
+      <mesh position={[0, 1.65, 0]}>
+        <torusGeometry args={[0.138, 0.01, 16, 48]} />
+        <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
+      </mesh>
+      <mesh position={[0, 1.8, 0]}>
+        <torusGeometry args={[0.138, 0.01, 16, 48]} />
+        <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
+      </mesh>
+
+      {/* Concentric Golden Showcase Halo at the base */}
+      <mesh position={[0, -3.65, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.4, 2.2, 64]} />
+        <meshBasicMaterial color="#d4af37" transparent opacity={0.12} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, -3.65, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.8, 3.2, 64]} />
+        <meshBasicMaterial color="#ff2222" transparent opacity={0.08} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+};
+
+/**
+ * 3. Character Guide 3D (The Companion Throughout the Journey)
+ * Preloads the 8 character poses and smoothly crossfades between them as the user scrolls,
+ * positioning the guide gracefully beside the central flute and billboarded to face the camera.
+ */
+const CharacterGuide3D: React.FC = () => {
+  const { camera } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const [textures, setTextures] = useState<(THREE.Texture | null)[]>(new Array(8).fill(null));
+  const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
+
+  // Load all 8 transparent character pose assets
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+
+    for (let i = 0; i < 8; i++) {
+      loader.load(
+        `/brand/character/pose_${i}.png`,
+        (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          setTextures((prev) => {
+            const next = [...prev];
+            next[i] = tex;
+            return next;
+          });
+        },
+        undefined,
+        (err) => {
+          console.warn(`Could not load pose_${i}.png`, err);
+        }
+      );
+    }
+  }, []);
+
+  useFrame((state) => {
+    const progress = scrollManager.current;
+
+    // Billboard the entire character guide to always face the camera
+    if (groupRef.current) {
+      groupRef.current.quaternion.copy(camera.quaternion);
+
+      // Dynamically position the character guide along camera's right side
+      // so it is always elegantly framed beside the straight flute from any viewing angle
+      const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+      const hoverY = Math.sin(state.clock.getElapsedTime() * 1.1) * 0.08 - 0.15;
+      const targetPos = cameraRight.multiplyScalar(2.1);
+      targetPos.y += hoverY;
+      groupRef.current.position.copy(targetPos);
+    }
+
+    // Dynamic crossfade between character poses based on scroll progress
+    meshRefs.current.forEach((mesh, idx) => {
+      if (mesh) {
+        const dist = Math.abs(progress - idx);
+        // Fade window of ~0.6 chapters
+        const opacity = Math.max(0, 1 - dist / 0.6);
+        const mat = mesh.material as THREE.MeshBasicMaterial;
+        if (mat) {
+          mat.opacity = opacity;
+          mesh.visible = opacity > 0.01;
+        }
+      }
+    });
+  });
+
+  // Relative width proportions for each pose (maintaining their actual aspect ratios)
+  const poseSizes: [number, number][] = [
+    [1.8, 4.2], // Pose 0 (ch 1.png): Standing Guide
+    [2.4, 4.2], // Pose 1 (ch 2.png): Flute Player
+    [2.1, 4.2], // Pose 2 (ch 3.png): Scribe & Mark
+    [2.2, 4.2], // Pose 3 (ch 4.png): Horizon Pointer
+    [3.8, 1.8], // Pose 4 (ch 5.png): Reclining Poet
+    [3.2, 3.8], // Pose 5 (ch 6.png): Lotus Meditator
+    [2.8, 4.2], // Pose 6 (ch 7.png): Director & Companion
+    [3.0, 4.2], // Pose 7 (ch8.png): Grand Stance
+  ];
+
+  return (
+    <group ref={groupRef} position={[1.9, 0, 0]}>
+      {textures.map((tex, idx) => {
+        const [w, h] = poseSizes[idx] || [2.2, 4.2];
+        return (
+          <mesh
+            key={idx}
+            ref={(el) => (meshRefs.current[idx] = el)}
+            position={[0, 0, 0]}
+            visible={idx === 0}
+          >
+            <planeGeometry args={[w, h]} />
+            {tex ? (
+              <meshBasicMaterial
+                map={tex}
+                transparent
+                opacity={idx === 0 ? 1 : 0}
+                depthWrite={false}
+                side={THREE.DoubleSide}
+              />
+            ) : (
+              <meshBasicMaterial transparent opacity={0} />
+            )}
+          </mesh>
+        );
+      })}
+    </group>
+  );
+};
+
+/**
+ * 4. Cosmic Atmosphere: Minimalist Stardust Particles
+ * Subtle gold and silver floating dust replacing heavy clutter.
+ */
+const MinimalistAtmosphere: React.FC = () => {
+  const count = 1800;
   const meshRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
@@ -60,26 +323,26 @@ const DeepTunnelParticles: React.FC = () => {
     const colorWhite = new THREE.Color('#f0f0f5');
 
     for (let i = 0; i < count; i++) {
-      const radius = 3.0 + Math.random() * 22;
-      const angle = Math.random() * Math.PI * 2;
-      const z = 20 - Math.random() * (TOTAL_CHAPTERS * CHAPTER_SPACING + 30);
+      const radius = 2.5 + Math.random() * 18;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
 
-      pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = Math.sin(angle) * radius;
-      pos[i * 3 + 2] = z;
+      pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 16;
+      pos[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
 
       const rand = Math.random();
-      const chosenColor = rand < 0.6 ? colorWhite : rand < 0.85 ? colorGold : colorRed;
-      col[i * 3] = chosenColor.r;
-      col[i * 3 + 1] = chosenColor.g;
-      col[i * 3 + 2] = chosenColor.b;
+      const chosen = rand < 0.65 ? colorWhite : rand < 0.88 ? colorGold : colorRed;
+      col[i * 3] = chosen.r;
+      col[i * 3 + 1] = chosen.g;
+      col[i * 3 + 2] = chosen.b;
     }
     return [pos, col];
   }, [count]);
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.z = state.clock.getElapsedTime() * 0.015;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.012;
     }
   });
 
@@ -90,10 +353,10 @@ const DeepTunnelParticles: React.FC = () => {
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.16}
+        size={0.14}
         vertexColors
         transparent
-        opacity={0.8}
+        opacity={0.75}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -102,418 +365,30 @@ const DeepTunnelParticles: React.FC = () => {
 };
 
 /**
- * 3. Sacred Spline Tube:
- * Continuous red silk thread traversing the inward universe.
- */
-const SacredSplineTube: React.FC = () => {
-  const curve = useMemo(() => {
-    const points: THREE.Vector3[] = [];
-    for (let i = 0; i <= TOTAL_CHAPTERS + 1; i++) {
-      const z = -i * CHAPTER_SPACING;
-      const x = Math.sin(i * 1.3) * 4.2;
-      const y = Math.cos(i * 1.1) * 3.2;
-      points.push(new THREE.Vector3(x, y, z));
-    }
-    return new THREE.CatmullRomCurve3(points, false, 'centripetal');
-  }, []);
-
-  const tubeGeo = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.08, 10, false), [curve]);
-  const haloGeo = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.22, 8, false), [curve]);
-
-  return (
-    <group>
-      <mesh geometry={tubeGeo}>
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff1e46"
-          emissiveIntensity={1.4}
-          roughness={0.2}
-          metalness={0.6}
-        />
-      </mesh>
-      <mesh geometry={haloGeo}>
-        <meshBasicMaterial
-          color="#ff3366"
-          transparent
-          opacity={0.25}
-          blending={THREE.AdditiveBlending}
-          wireframe
-        />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 4. Chapter 0: The Prologue Gateway — Centerpiece Sculpture
- * Positioned exactly at (0, 0, 0) so when camera is at (0, 0, 10), it is centered in full view!
- */
-const Chapter0Gateway: React.FC = () => {
-  const ring1 = useRef<THREE.Mesh>(null);
-  const ring2 = useRef<THREE.Mesh>(null);
-  const reelRef = useRef<THREE.Group>(null);
-  const fluteRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (ring1.current) ring1.current.rotation.z = t * 0.2;
-    if (ring2.current) ring2.current.rotation.z = -t * 0.15;
-    if (reelRef.current) reelRef.current.rotation.z = t * 0.4;
-    if (fluteRef.current) {
-      fluteRef.current.rotation.y = t * 0.4;
-      fluteRef.current.position.y = Math.sin(t * 1.2) * 0.08;
-    }
-  });
-
-  return (
-    <group position={[0, 0, 0]}>
-      {/* Outer Cartier Gold Ring */}
-      <mesh ref={ring1}>
-        <torusGeometry args={[3.4, 0.04, 16, 100]} />
-        <meshStandardMaterial color="#d4af37" emissive="#4d3b14" metalness={0.9} roughness={0.2} />
-      </mesh>
-
-      {/* Middle Crimson Ring */}
-      <mesh ref={ring2}>
-        <torusGeometry args={[4.4, 0.03, 16, 100]} />
-        <meshStandardMaterial color="#ff2222" emissive="#550512" metalness={0.8} roughness={0.3} />
-      </mesh>
-
-      {/* Centerpiece: Orbiting Golden Film Reel (STUDIO) */}
-      <group ref={reelRef} position={[0, 0, 0]}>
-        <mesh>
-          <torusGeometry args={[1.5, 0.05, 16, 64]} />
-          <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
-        </mesh>
-        {[0, 60, 120, 180, 240, 300].map((deg) => (
-          <mesh key={deg} rotation={[0, 0, (deg * Math.PI) / 180]}>
-            <cylinderGeometry args={[0.02, 0.02, 3.0, 8]} />
-            <meshStandardMaterial color="#ff2222" metalness={0.8} roughness={0.2} />
-          </mesh>
-        ))}
-      </group>
-
-      {/* Glowing Sacred Red Flute floating inside */}
-      <group ref={fluteRef} position={[0, 0, 0.2]}>
-        <mesh rotation={[0, 0, Math.PI / 4]}>
-          <cylinderGeometry args={[0.045, 0.045, 2.4, 24]} />
-          <meshStandardMaterial
-            color="#ff2222"
-            emissive="#ff1e46"
-            emissiveIntensity={1.8}
-            roughness={0.2}
-            metalness={0.4}
-          />
-        </mesh>
-        {[-0.6, -0.2, 0.2, 0.6].map((offset, i) => (
-          <mesh
-            key={i}
-            position={[offset * Math.cos(Math.PI / 4), offset * Math.sin(Math.PI / 4), 0]}
-            rotation={[0, 0, Math.PI / 4]}
-          >
-            <torusGeometry args={[0.055, 0.012, 8, 24]} />
-            <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.1} />
-          </mesh>
-        ))}
-      </group>
-    </group>
-  );
-};
-
-/**
- * 5. Chapter 1: The Core Pillars 3D Constellation
- */
-const Chapter1Pillars: React.FC = () => {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.z = state.clock.getElapsedTime() * 0.08;
-    }
-  });
-
-  const positions: [number, number, number][] = [
-    [-4.5, 2.4, 0],   // 01 Branding
-    [4.5, 2.4, 0],    // 02 Film
-    [-4.5, -2.4, 0],  // 03 Animation
-    [4.5, -2.4, 0],   // 04 Education
-  ];
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING]}>
-      <group ref={groupRef}>
-        {positions.map((pos, idx) => (
-          <group key={idx} position={pos}>
-            <mesh>
-              <octahedronGeometry args={[1.2, 0]} />
-              <meshStandardMaterial
-                color={idx % 2 === 0 ? '#ff2222' : '#e0a96d'}
-                wireframe
-                emissive={idx % 2 === 0 ? '#ff1e46' : '#996622'}
-                emissiveIntensity={0.65}
-              />
-            </mesh>
-            <mesh>
-              <sphereGeometry args={[0.3, 16, 16]} />
-              <meshBasicMaterial color="#ffffff" />
-            </mesh>
-          </group>
-        ))}
-      </group>
-    </group>
-  );
-};
-
-/**
- * 6. Chapter 2: The Sacred Thread Nexus (Torus Knot)
- */
-const Chapter2Nexus: React.FC = () => {
-  const knotRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (knotRef.current) {
-      knotRef.current.rotation.x = state.clock.getElapsedTime() * 0.3;
-      knotRef.current.rotation.y = state.clock.getElapsedTime() * 0.2;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 2]}>
-      <mesh ref={knotRef}>
-        <torusKnotGeometry args={[2.6, 0.09, 130, 32, 2, 3]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff1e46"
-          emissiveIntensity={1.3}
-          roughness={0.25}
-          metalness={0.7}
-        />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 7. Chapter 3: The Atelier Savoir-Faire Crystals
- */
-const Chapter3Atelier: React.FC = () => {
-  const crystalRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (crystalRef.current) {
-      crystalRef.current.rotation.y = state.clock.getElapsedTime() * 0.4;
-      crystalRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.8) * 0.3;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 3]}>
-      <mesh ref={crystalRef}>
-        <dodecahedronGeometry args={[2.3, 0]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff1e46"
-          emissiveIntensity={0.8}
-          roughness={0.1}
-          metalness={0.8}
-          wireframe
-        />
-      </mesh>
-      <mesh>
-        <torusGeometry args={[4.0, 0.03, 16, 80]} />
-        <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 8. Floating Textured 3D Collateral Frame in Chapter 4
- */
-const FloatingCollateralFrame3D: React.FC<{
-  imageUrl: string;
-  pos: [number, number, number];
-  rotY: number;
-}> = ({ imageUrl, pos, rotY }) => {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  const groupRef = useRef<THREE.Group>(null);
-
-  useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load(imageUrl, (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      setTexture(tex);
-    });
-  }, [imageUrl]);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.position.y =
-        pos[1] + Math.sin(state.clock.getElapsedTime() * 0.8 + pos[0]) * 0.12;
-    }
-  });
-
-  return (
-    <group ref={groupRef} position={pos} rotation={[0, rotY, 0]}>
-      {/* Beveled Gold Outer Frame */}
-      <mesh>
-        <boxGeometry args={[3.2, 2.1, 0.08]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.85} roughness={0.2} />
-      </mesh>
-      {/* Dark Obsidian Inner Bezel */}
-      <mesh position={[0, 0, 0.045]}>
-        <boxGeometry args={[3.06, 1.96, 0.04]} />
-        <meshStandardMaterial color="#1a1a1f" roughness={0.6} />
-      </mesh>
-      {/* Front Textured Display Face */}
-      <mesh position={[0, 0, 0.07]}>
-        <planeGeometry args={[2.95, 1.85]} />
-        {texture ? (
-          <meshBasicMaterial map={texture} />
-        ) : (
-          <meshStandardMaterial color="#222228" wireframe />
-        )}
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 9. Chapter 4: Selected Commissions Gallery in 3D
- */
-const Chapter4Gallery: React.FC = () => {
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 4]}>
-      <FloatingCollateralFrame3D imageUrl="/brand/p57_0.jpg" pos={[-4.5, 1.6, 0]} rotY={0.2} />
-      <FloatingCollateralFrame3D imageUrl="/brand/p59_0.jpg" pos={[4.5, 1.6, 0]} rotY={-0.2} />
-      <FloatingCollateralFrame3D imageUrl="/brand/p61_0.png" pos={[-4.5, -2.2, -1]} rotY={0.16} />
-      <FloatingCollateralFrame3D imageUrl="/brand/p45_1.png" pos={[4.5, -2.2, -1]} rotY={-0.16} />
-    </group>
-  );
-};
-
-/**
- * 10. Chapter 5: Living Archive Constellation
- */
-const Chapter5Archive: React.FC = () => {
-  const ringRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (ringRef.current) {
-      ringRef.current.rotation.z = -state.clock.getElapsedTime() * 0.14;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 5]}>
-      <group ref={ringRef}>
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
-          const rad = (deg * Math.PI) / 180;
-          return (
-            <mesh key={deg} position={[Math.cos(rad) * 4.8, Math.sin(rad) * 4.8, 0]}>
-              <octahedronGeometry args={[0.4, 0]} />
-              <meshStandardMaterial color="#ff2222" emissive="#ff1e46" emissiveIntensity={0.6} />
-            </mesh>
-          );
-        })}
-      </group>
-      <mesh>
-        <torusGeometry args={[4.8, 0.02, 16, 120]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.2} />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 11. Chapter 6: The Commission Geodesic Cocoon
- */
-const Chapter6Commission: React.FC = () => {
-  const domeRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (domeRef.current) {
-      domeRef.current.rotation.y = state.clock.getElapsedTime() * 0.1;
-      domeRef.current.rotation.z = Math.sin(state.clock.getElapsedTime() * 0.3) * 0.1;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 6]}>
-      <mesh ref={domeRef}>
-        <sphereGeometry args={[5.2, 18, 18]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#550512"
-          wireframe
-          roughness={0.4}
-          metalness={0.8}
-        />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 12. Chapter 7: The Maison Grand Portal
- */
-const Chapter7Maison: React.FC = () => {
-  const ringRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (ringRef.current) {
-      ringRef.current.rotation.z = state.clock.getElapsedTime() * 0.2;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 7]}>
-      <mesh ref={ringRef}>
-        <torusGeometry args={[5.0, 0.08, 16, 120]} />
-        <meshStandardMaterial
-          color="#d4af37"
-          emissive="#e0a96d"
-          emissiveIntensity={0.6}
-          metalness={0.9}
-          roughness={0.1}
-        />
-      </mesh>
-      <mesh>
-        <ringGeometry args={[0.01, 4.8, 64]} />
-        <meshBasicMaterial color="#ff2222" transparent opacity={0.06} side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * Main 3D Inward World Scene
+ * 5. Main 3D World Scene
+ * Features the Straight Central Flute, Character Guide, and Multi-Angle Orbit Camera.
  */
 export const InwardWorld: React.FC = () => {
   return (
     <>
-      <InwardCamera />
+      <OrbitExhibitionCamera />
+
+      {/* Studio Exhibition Lighting */}
       <ambientLight intensity={0.65} />
       <directionalLight position={[10, 16, 12]} intensity={1.4} color="#ffffff" />
-      <pointLight position={[0, 0, 10]} intensity={3.2} color="#e0a96d" distance={40} />
-      <pointLight position={[0, 0, -60]} intensity={2.8} color="#ffffff" distance={65} />
-      <pointLight position={[0, 0, -112]} intensity={3.0} color="#e0a96d" distance={70} />
-      <pointLight position={[0, 0, -180]} intensity={3.5} color="#ff2222" distance={90} />
+      <pointLight position={[0, 2, 8]} intensity={3.0} color="#e0a96d" distance={30} />
+      <pointLight position={[-6, -1, -6]} intensity={2.8} color="#ff2222" distance={30} />
+      <pointLight position={[6, 4, -4]} intensity={2.5} color="#ffffff" distance={28} />
 
-      {/* Atmospheric Fog - pushed back to 16 so initial landing scene is radiant and clear */}
-      <fog attach="fog" args={['#060608', 16, 115]} />
+      {/* Atmospheric Fog (set far so the flute & character are always crystal-clear) */}
+      <fog attach="fog" args={['#060608', 20, 70]} />
 
-      {/* Spatial 3D Elements */}
-      <DeepTunnelParticles />
-      <SacredSplineTube />
-      <Chapter0Gateway />
-      <Chapter1Pillars />
-      <Chapter2Nexus />
-      <Chapter3Atelier />
-      <Chapter4Gallery />
-      <Chapter5Archive />
-      <Chapter6Commission />
-      <Chapter7Maison />
+      {/* The 2 Core Heroes: Straight Central Flute + Character Guide */}
+      <CentralStraightFlute />
+      <CharacterGuide3D />
+
+      {/* Minimalist Ambient Atmosphere */}
+      <MinimalistAtmosphere />
     </>
   );
 };
