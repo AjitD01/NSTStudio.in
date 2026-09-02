@@ -288,10 +288,19 @@ const InteractiveCharacterGuide: React.FC = () => {
   const { camera, pointer } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const auraRef = useRef<THREE.Mesh>(null);
+  const pulseScaleRef = useRef(1.0);
   const [textures, setTextures] = useState<(THREE.Texture | null)[]>(new Array(8).fill(null));
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
 
-  const { triggerPulse, setHovered, pulseCounter } = useGuideStore();
+  // Subscribe to guide store pulses cleanly without DOM React hook mismatch
+  useEffect(() => {
+    return useGuideStore.subscribe(() => {
+      pulseScaleRef.current = 1.35;
+      setTimeout(() => {
+        pulseScaleRef.current = 1.0;
+      }, 350);
+    });
+  }, []);
 
   // Load all 8 transparent character pose assets
   useEffect(() => {
@@ -342,10 +351,11 @@ const InteractiveCharacterGuide: React.FC = () => {
       groupRef.current.rotation.z = -pointer.x * 0.06;
     }
 
-    // Dynamic ground aura breathing
+    // Dynamic ground aura breathing + pulse response
     if (auraRef.current) {
-      const scale = 1.0 + Math.sin(time * 2.0) * 0.15 + (pulseCounter % 2 === 1 ? 0.3 : 0);
-      auraRef.current.scale.set(scale, scale, 1);
+      const basePulse = 1.0 + Math.sin(time * 2.0) * 0.15;
+      const finalScale = basePulse * pulseScaleRef.current;
+      auraRef.current.scale.set(finalScale, finalScale, 1);
     }
 
     // Dynamic crossfade between character poses based on scroll progress
@@ -380,14 +390,14 @@ const InteractiveCharacterGuide: React.FC = () => {
       position={[2.1, 0, 0]}
       onPointerOver={() => {
         document.body.style.cursor = 'pointer';
-        setHovered(true);
+        useGuideStore.getState().setHovered(true);
       }}
       onPointerOut={() => {
         document.body.style.cursor = 'auto';
-        setHovered(false);
+        useGuideStore.getState().setHovered(false);
       }}
       onClick={() => {
-        triggerPulse();
+        useGuideStore.getState().triggerPulse();
       }}
     >
       {/* Ethereal Luminous Ground Aura */}
