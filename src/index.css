@@ -231,6 +231,22 @@ html, body {
 /* =========================================================================
    CHAPTER 0: PROLOGUE STYLES (Clean, Spacious, Majestic)
    ========================================================================= */
+.prologue-hero-card {
+  background: var(--nst-surface);
+  border: 1px solid var(--nst-border);
+  border-radius: 16px;
+  padding: 34px 44px 28px 44px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 24px rgba(255, 34, 34, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 660px;
+  width: 100%;
+}
+
 .prologue-emblem {
   display: flex;
   flex-direction: column;
@@ -1399,6 +1415,12 @@ html, body {
   }
 
   /* ----- Chapter 0: Prologue on Mobile ----- */
+  .prologue-hero-card {
+    padding: 20px 16px 18px 16px;
+    border-radius: 12px;
+    max-width: 100%;
+  }
+
   .prologue-emblem {
     margin-bottom: 10px;
   }

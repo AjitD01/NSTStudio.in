@@ -55,30 +55,32 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
       {/* ===== CHAPTER 0: PROLOGUE ===== */}
       <div className="chapter-slide" style={getStyle(0)}>
         <div className="chapter-center-content">
-          <div className="prologue-emblem">
-            <span className="prologue-kicker">00 / PROLOGUE</span>
-            <div className="prologue-monogram-ring">
-              <span className="monogram-text">NST</span>
+          <div className="prologue-hero-card">
+            <div className="prologue-emblem">
+              <span className="prologue-kicker">00 / PROLOGUE</span>
+              <div className="prologue-monogram-ring">
+                <span className="monogram-text">NST</span>
+              </div>
             </div>
-          </div>
 
-          <h1 className="chapter-hero-title">
-            NST <span className="text-red">/</span> STUDIO
-          </h1>
+            <h1 className="chapter-hero-title">
+              NST <span className="text-red">/</span> STUDIO
+            </h1>
 
-          <p className="chapter-hero-tagline">
-            NIKUNJ STORYTELLING STUDIO · STORY FIRST
-          </p>
+            <p className="chapter-hero-tagline">
+              NIKUNJ STORYTELLING STUDIO · STORY FIRST
+            </p>
 
-          <p className="chapter-hero-subtext">
-            “Transforming businesses into memorable brands through the sacred craft of story.”
-          </p>
+            <p className="chapter-hero-subtext">
+              “Transforming businesses into memorable brands through the sacred craft of story.”
+            </p>
 
-          <div className="prologue-action-row">
-            <div className="inward-scroll-cue" onClick={() => scrollManager.setTarget(1)}>
-              <span className="cue-label">SCROLL INWARD TO ENTER</span>
-              <div className="cue-line-inward">
-                <div className="cue-dot-pulse" />
+            <div className="prologue-action-row">
+              <div className="inward-scroll-cue" onClick={() => scrollManager.setTarget(1)}>
+                <span className="cue-label">SCROLL INWARD TO ENTER</span>
+                <div className="cue-line-inward">
+                  <div className="cue-dot-pulse" />
+                </div>
               </div>
             </div>
           </div>
