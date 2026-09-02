@@ -3,6 +3,7 @@ import { SceneCanvas } from './three/SceneCanvas';
 import { ChapterOverlay } from './components/ChapterOverlay';
 import { SectionIndicator } from './components/SectionIndicator';
 import { BrandDossierModal } from './components/BrandDossierModal';
+import { GuideCompanion } from './components/GuideCompanion';
 import { scrollManager, TOTAL_CHAPTERS } from './state/scrollStore';
 
 export const App: React.FC = () => {
@@ -81,7 +82,10 @@ export const App: React.FC = () => {
         onOpenDossier={handleOpenDossier}
       />
 
-      {/* 5. Cartier Vertical Dot Navigation */}
+      {/* 5. Interactive Character Guide Companion Badge */}
+      <GuideCompanion progress={progress} />
+
+      {/* 6. Cartier Vertical Dot Navigation */}
       <SectionIndicator
         scrollOffset={progress / (TOTAL_CHAPTERS - 1)}
         onSelectSection={handleDotClick}

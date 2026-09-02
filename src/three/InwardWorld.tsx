@@ -2,10 +2,12 @@ import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { scrollManager, TOTAL_CHAPTERS } from '../state/scrollStore';
+import { createFluteLacquerTexture } from './fluteTexture';
+import { useGuideStore } from '../state/guideStore';
 
 /**
- * 8 Bespoke Camera View Angles (One unique vantage point per chapter)
- * Instead of zooming linearly along Z, the camera smoothly orbits around the central straight flute.
+ * 8 Bespoke Camera View Angles across 3D Cartesian planes
+ * Smoothly rolls, pitches, and swoops around the straight flute.
  */
 interface CameraKeyframe {
   pos: [number, number, number];
@@ -102,122 +104,194 @@ export const OrbitExhibitionCamera: React.FC = () => {
 };
 
 /**
- * 2. The Central Straight Flute (Master 3D Sculpture)
- * High-detail vertical flute anchored straight at (0, 0, 0) with crimson lacquer and gold stops.
+ * 2. Realistic Hand-Lacquered Central Straight Flute
+ * Features multi-layer clearcoat lacquer, internal hollow bore, domed crown cap,
+ * bevelled tone holes, and physics-swaying silk tassel.
  */
-const CentralStraightFlute: React.FC = () => {
+const RealisticCentralFlute: React.FC = () => {
   const fluteGroupRef = useRef<THREE.Group>(null);
+  const tasselRef = useRef<THREE.Group>(null);
+
+  // Generate hand-lacquered rosewood grain texture
+  const lacquerTexture = useMemo(() => createFluteLacquerTexture(), []);
 
   useFrame((state) => {
+    const time = state.clock.getElapsedTime();
     if (fluteGroupRef.current) {
       // Gentle breathing levitation hover (keeps flute straight)
-      fluteGroupRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 0.8) * 0.06;
+      fluteGroupRef.current.position.y = Math.sin(time * 0.8) * 0.06;
+    }
+
+    // Subtle natural physics sway for the hanging silk tassel
+    if (tasselRef.current) {
+      tasselRef.current.rotation.z = Math.sin(time * 1.8) * 0.12;
+      tasselRef.current.rotation.x = Math.cos(time * 1.4) * 0.08;
     }
   });
 
-  // 6 Tone Holes coordinates
-  const toneHolePositions = useMemo(() => [0.6, 0.1, -0.4, -0.9, -1.4, -1.9], []);
+  // 6 Tone Holes coordinates (acoustically spaced)
+  const toneHolePositions = useMemo(() => [0.65, 0.15, -0.35, -0.85, -1.35, -1.85], []);
 
   // Gold Ring Band positions along the straight flute
   const goldBands = useMemo(
     () => [
-      { y: 3.55, r: 0.14, h: 0.12 }, // Top Crown Cap
-      { y: 2.3, r: 0.138, h: 0.08 },  // Headjoint Ferrule
-      { y: 0.95, r: 0.135, h: 0.05 }, // Upper Body Joint
-      { y: -1.05, r: 0.135, h: 0.05 },// Lower Body Joint
-      { y: -3.55, r: 0.14, h: 0.12 }, // Footjoint Ring
+      { y: 3.55, r: 0.144, h: 0.1 },  // Crown Collar
+      { y: 2.35, r: 0.142, h: 0.07 }, // Headjoint Ferrule
+      { y: 1.0, r: 0.138, h: 0.045 }, // Upper Body Ring
+      { y: -1.0, r: 0.138, h: 0.045 },// Lower Body Ring
+      { y: -2.3, r: 0.14, h: 0.05 },  // Pre-Foot Ferrule
+      { y: -3.55, r: 0.144, h: 0.1 }, // Footjoint Ring
     ],
     []
   );
 
   return (
     <group ref={fluteGroupRef} position={[0, 0, 0]}>
-      {/* Main Flute Body — Straight Deep Crimson Lacquer Tube */}
-      <mesh>
-        <cylinderGeometry args={[0.13, 0.13, 7.2, 64]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#550512"
-          emissiveIntensity={0.25}
-          roughness={0.18}
-          metalness={0.4}
+      {/* 1. Main Flute Body — Multi-Layered Clearcoat Cinnabar Lacquer Tube */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.135, 0.135, 7.2, 64]} />
+        <meshPhysicalMaterial
+          map={lacquerTexture}
+          color="#d4142a"
+          emissive="#38000a"
+          emissiveIntensity={0.2}
+          roughness={0.14}
+          metalness={0.08}
+          clearcoat={1.0}
+          clearcoatRoughness={0.06}
+          reflectivity={0.9}
         />
       </mesh>
 
-      {/* Embouchure Mouth Blow-Hole (Headjoint at Y = 2.65) */}
-      <group position={[0, 2.65, 0.12]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.045, 0.045, 0.05, 24]} />
-          <meshBasicMaterial color="#06060a" />
+      {/* 2. Internal Dark Hollow Bore (creates authentic depth when viewing down or into holes) */}
+      <mesh>
+        <cylinderGeometry args={[0.11, 0.11, 7.22, 32]} />
+        <meshBasicMaterial color="#0a0507" side={THREE.BackSide} />
+      </mesh>
+
+      {/* 3. Domed Gold Crown Stopper (Top at Y = 3.6) */}
+      <group position={[0, 3.6, 0]}>
+        {/* Crown Dome */}
+        <mesh position={[0, 0.04, 0]}>
+          <sphereGeometry args={[0.138, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.15} />
         </mesh>
-        {/* Lip Plate Raised Bezel */}
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.01]}>
-          <ringGeometry args={[0.045, 0.075, 24]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.2} />
+        {/* Top Finial Jewel */}
+        <mesh position={[0, 0.18, 0]}>
+          <cylinderGeometry args={[0.025, 0.04, 0.1, 16]} />
+          <meshStandardMaterial color="#ff2222" metalness={0.8} roughness={0.1} />
         </mesh>
       </group>
 
-      {/* 6 Precision Tone Holes along Front Face (facing +Z) */}
+      {/* 4. Embouchure Mouth Blow-Hole with Chamfered Lip Plate (Headjoint at Y = 2.7) */}
+      <group position={[0, 2.7, 0.12]}>
+        {/* Inner Dark Bore Opening */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.048, 0.048, 0.06, 24]} />
+          <meshBasicMaterial color="#050204" />
+        </mesh>
+        {/* Raised Ergonomic Gold Lip-Plate */}
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.005]}>
+          <ringGeometry args={[0.048, 0.085, 32]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.92} roughness={0.18} />
+        </mesh>
+      </group>
+
+      {/* 5. Six Precision Recessed Tone Holes with Gold Inlay Rims */}
       {toneHolePositions.map((y, idx) => (
-        <group key={idx} position={[0, y, 0.12]}>
+        <group key={idx} position={[0, y, 0.122]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.032, 0.032, 0.05, 20]} />
-            <meshBasicMaterial color="#08080c" />
+            <cylinderGeometry args={[0.034, 0.034, 0.05, 20]} />
+            <meshBasicMaterial color="#060204" />
           </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.01]}>
-            <ringGeometry args={[0.032, 0.05, 20]} />
-            <meshStandardMaterial color="#d4af37" metalness={0.85} roughness={0.25} />
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.005]}>
+            <ringGeometry args={[0.034, 0.054, 24]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.2} />
           </mesh>
         </group>
       ))}
 
-      {/* Polished Gold Ring Stops & Ferrules */}
+      {/* 6. Polished 24k Gold Ferrules and Joint Accent Rings */}
       {goldBands.map((band, idx) => (
-        <mesh key={idx} position={[0, band.y, 0]}>
-          <cylinderGeometry args={[band.r, band.r, band.h, 48]} />
-          <meshStandardMaterial
-            color="#d4af37"
-            emissive="#4d3b14"
-            emissiveIntensity={0.3}
-            metalness={0.92}
-            roughness={0.15}
-          />
-        </mesh>
+        <group key={idx} position={[0, band.y, 0]}>
+          <mesh>
+            <cylinderGeometry args={[band.r, band.r, band.h, 48]} />
+            <meshStandardMaterial
+              color="#d4af37"
+              emissive="#3d2a08"
+              emissiveIntensity={0.25}
+              metalness={0.96}
+              roughness={0.12}
+            />
+          </mesh>
+          {/* Subtle accent pinstripe */}
+          <mesh position={[0, band.h / 2 + 0.01, 0]}>
+            <torusGeometry args={[band.r + 0.002, 0.004, 12, 48]} />
+            <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.1} />
+          </mesh>
+        </group>
       ))}
 
-      {/* Sacred Golden Thread spiraling around upper joint (Y = 1.1 to 2.2) */}
-      <mesh position={[0, 1.65, 0]}>
-        <torusGeometry args={[0.138, 0.01, 16, 48]} />
-        <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
-      </mesh>
-      <mesh position={[0, 1.8, 0]}>
-        <torusGeometry args={[0.138, 0.01, 16, 48]} />
-        <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
-      </mesh>
+      {/* 7. Sacred Red Silk Cord (Mauli) & Hanging Tassel */}
+      <group position={[0, 2.35, 0]}>
+        {/* Cord Wrap around headjoint */}
+        <mesh>
+          <torusGeometry args={[0.144, 0.012, 16, 48]} />
+          <meshStandardMaterial color="#ff2222" roughness={0.6} />
+        </mesh>
+        <mesh position={[0, -0.03, 0]}>
+          <torusGeometry args={[0.144, 0.012, 16, 48]} />
+          <meshStandardMaterial color="#d4af37" roughness={0.4} />
+        </mesh>
 
-      {/* Concentric Golden Showcase Halo at the base */}
+        {/* Swaying Silk Tassel hanging to the side */}
+        <group ref={tasselRef} position={[0.16, -0.04, 0]}>
+          {/* Gold connecting bead */}
+          <mesh position={[0, -0.06, 0]}>
+            <sphereGeometry args={[0.024, 16, 16]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.15} />
+          </mesh>
+          {/* Hanging thread strand */}
+          <mesh position={[0, -0.32, 0]}>
+            <cylinderGeometry args={[0.006, 0.018, 0.5, 16]} />
+            <meshStandardMaterial color="#ff2222" roughness={0.7} />
+          </mesh>
+          {/* Bottom tassel skirt */}
+          <mesh position={[0, -0.6, 0]}>
+            <coneGeometry args={[0.05, 0.2, 20]} />
+            <meshStandardMaterial color="#ff2222" roughness={0.6} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* 8. Concentric Exhibition Pedestal Ring at Base */}
       <mesh position={[0, -3.65, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.4, 2.2, 64]} />
-        <meshBasicMaterial color="#d4af37" transparent opacity={0.12} side={THREE.DoubleSide} />
+        <ringGeometry args={[0.35, 2.4, 64]} />
+        <meshBasicMaterial color="#d4af37" transparent opacity={0.14} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, -3.65, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.8, 3.2, 64]} />
-        <meshBasicMaterial color="#ff2222" transparent opacity={0.08} side={THREE.DoubleSide} />
+        <ringGeometry args={[2.9, 3.4, 64]} />
+        <meshBasicMaterial color="#ff2222" transparent opacity={0.09} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
 };
 
 /**
- * 3. Character Guide 3D (The Companion Throughout the Journey)
- * Preloads the 8 character poses and smoothly crossfades between them as the user scrolls,
- * positioning the guide gracefully beside the central flute and billboarded to face the camera.
+ * 3. Interactive Character Guide 3D
+ * - Tilts & reacts smoothly to cursor position.
+ * - Features an ethereal ground aura that pulses.
+ * - Emits particle sparkle burst on click.
+ * - Connects to GuideStore to show insight dialogues.
  */
-const CharacterGuide3D: React.FC = () => {
-  const { camera } = useThree();
+const InteractiveCharacterGuide: React.FC = () => {
+  const { camera, pointer } = useThree();
   const groupRef = useRef<THREE.Group>(null);
+  const auraRef = useRef<THREE.Mesh>(null);
   const [textures, setTextures] = useState<(THREE.Texture | null)[]>(new Array(8).fill(null));
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
+
+  const { triggerPulse, setHovered, pulseCounter } = useGuideStore();
 
   // Load all 8 transparent character pose assets
   useEffect(() => {
@@ -244,25 +318,40 @@ const CharacterGuide3D: React.FC = () => {
 
   useFrame((state) => {
     const progress = scrollManager.current;
+    const time = state.clock.getElapsedTime();
 
-    // Billboard the entire character guide to always face the camera
     if (groupRef.current) {
+      // Billboard the entire character guide to always face the camera
       groupRef.current.quaternion.copy(camera.quaternion);
 
-      // Dynamically position the character guide along camera's right side
-      // so it is always elegantly framed beside the straight flute from any viewing angle
+      // Dynamically position along camera's right side so it never occludes the flute
       const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-      const hoverY = Math.sin(state.clock.getElapsedTime() * 1.1) * 0.08 - 0.15;
-      const targetPos = cameraRight.multiplyScalar(2.1);
-      targetPos.y += hoverY;
+      const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+
+      // Subtle breathing float + interactive cursor look-at parallax
+      const hoverY = Math.sin(time * 1.1) * 0.08 - 0.15;
+      const targetPos = cameraRight
+        .clone()
+        .multiplyScalar(2.1)
+        .add(cameraUp.clone().multiplyScalar(hoverY + pointer.y * 0.2));
+      targetPos.x += pointer.x * 0.3;
+
       groupRef.current.position.copy(targetPos);
+
+      // Gentle interactive 3D tilt towards cursor
+      groupRef.current.rotation.z = -pointer.x * 0.06;
+    }
+
+    // Dynamic ground aura breathing
+    if (auraRef.current) {
+      const scale = 1.0 + Math.sin(time * 2.0) * 0.15 + (pulseCounter % 2 === 1 ? 0.3 : 0);
+      auraRef.current.scale.set(scale, scale, 1);
     }
 
     // Dynamic crossfade between character poses based on scroll progress
     meshRefs.current.forEach((mesh, idx) => {
       if (mesh) {
         const dist = Math.abs(progress - idx);
-        // Fade window of ~0.6 chapters
         const opacity = Math.max(0, 1 - dist / 0.6);
         const mat = mesh.material as THREE.MeshBasicMaterial;
         if (mat) {
@@ -273,7 +362,7 @@ const CharacterGuide3D: React.FC = () => {
     });
   });
 
-  // Relative width proportions for each pose (maintaining their actual aspect ratios)
+  // Relative width proportions for each pose
   const poseSizes: [number, number][] = [
     [1.8, 4.2], // Pose 0 (ch 1.png): Standing Guide
     [2.4, 4.2], // Pose 1 (ch 2.png): Flute Player
@@ -286,7 +375,34 @@ const CharacterGuide3D: React.FC = () => {
   ];
 
   return (
-    <group ref={groupRef} position={[1.9, 0, 0]}>
+    <group
+      ref={groupRef}
+      position={[2.1, 0, 0]}
+      onPointerOver={() => {
+        document.body.style.cursor = 'pointer';
+        setHovered(true);
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = 'auto';
+        setHovered(false);
+      }}
+      onClick={() => {
+        triggerPulse();
+      }}
+    >
+      {/* Ethereal Luminous Ground Aura */}
+      <mesh ref={auraRef} position={[0, -2.1, -0.05]}>
+        <circleGeometry args={[1.1, 32]} />
+        <meshBasicMaterial
+          color="#d4af37"
+          transparent
+          opacity={0.16}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* 8 Character Poses (billboarded and crossfaded) */}
       {textures.map((tex, idx) => {
         const [w, h] = poseSizes[idx] || [2.2, 4.2];
         return (
@@ -320,7 +436,7 @@ const CharacterGuide3D: React.FC = () => {
  * Subtle gold and silver floating dust replacing heavy clutter.
  */
 const MinimalistAtmosphere: React.FC = () => {
-  const count = 1800;
+  const count = 950;
   const meshRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
@@ -331,16 +447,17 @@ const MinimalistAtmosphere: React.FC = () => {
     const colorWhite = new THREE.Color('#f0f0f5');
 
     for (let i = 0; i < count; i++) {
-      const radius = 2.5 + Math.random() * 18;
+      // Increased clearance radius around the central flute
+      const radius = 4.8 + Math.random() * 20;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
 
       pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 16;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 18;
       pos[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
 
       const rand = Math.random();
-      const chosen = rand < 0.65 ? colorWhite : rand < 0.88 ? colorGold : colorRed;
+      const chosen = rand < 0.75 ? colorWhite : rand < 0.93 ? colorGold : colorRed;
       col[i * 3] = chosen.r;
       col[i * 3 + 1] = chosen.g;
       col[i * 3 + 2] = chosen.b;
@@ -350,7 +467,7 @@ const MinimalistAtmosphere: React.FC = () => {
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.012;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.008;
     }
   });
 
@@ -361,10 +478,10 @@ const MinimalistAtmosphere: React.FC = () => {
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.14}
+        size={0.08}
         vertexColors
         transparent
-        opacity={0.75}
+        opacity={0.42}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -374,7 +491,8 @@ const MinimalistAtmosphere: React.FC = () => {
 
 /**
  * 5. Main 3D World Scene
- * Features the Straight Central Flute, Character Guide, and Multi-Angle Orbit Camera.
+ * Features Realistic Flute with Physical Clearcoat Lacquer, Interactive Character Guide,
+ * and Multi-Axis Orbit Camera.
  */
 export const InwardWorld: React.FC = () => {
   return (
@@ -382,18 +500,19 @@ export const InwardWorld: React.FC = () => {
       <OrbitExhibitionCamera />
 
       {/* Studio Exhibition Lighting */}
-      <ambientLight intensity={0.65} />
-      <directionalLight position={[10, 16, 12]} intensity={1.4} color="#ffffff" />
-      <pointLight position={[0, 2, 8]} intensity={3.0} color="#e0a96d" distance={30} />
-      <pointLight position={[-6, -1, -6]} intensity={2.8} color="#ff2222" distance={30} />
-      <pointLight position={[6, 4, -4]} intensity={2.5} color="#ffffff" distance={28} />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[10, 16, 12]} intensity={1.6} color="#ffffff" />
+      <directionalLight position={[-8, -6, -8]} intensity={0.9} color="#e0a96d" />
+      <pointLight position={[0, 2, 8]} intensity={3.5} color="#e0a96d" distance={30} />
+      <pointLight position={[-6, -1, -6]} intensity={3.0} color="#ff2222" distance={30} />
+      <pointLight position={[6, 4, -4]} intensity={2.8} color="#ffffff" distance={28} />
 
-      {/* Atmospheric Fog (set far so the flute & character are always crystal-clear) */}
-      <fog attach="fog" args={['#060608', 20, 70]} />
+      {/* Atmospheric Fog */}
+      <fog attach="fog" args={['#060608', 22, 75]} />
 
-      {/* The 2 Core Heroes: Straight Central Flute + Character Guide */}
-      <CentralStraightFlute />
-      <CharacterGuide3D />
+      {/* The 2 Core Heroes: Realistic Straight Flute + Interactive Character Guide */}
+      <RealisticCentralFlute />
+      <InteractiveCharacterGuide />
 
       {/* Minimalist Ambient Atmosphere */}
       <MinimalistAtmosphere />
