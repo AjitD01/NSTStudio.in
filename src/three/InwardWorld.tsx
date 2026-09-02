@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { scrollManager, TOTAL_CHAPTERS } from '../state/scrollStore';
 import { createFluteLacquerTexture } from './fluteTexture';
-import { useGuideStore } from '../state/guideStore';
 
 /**
  * 8 Bespoke Camera View Angles across 3D Cartesian planes
@@ -279,28 +278,30 @@ const RealisticCentralFlute: React.FC = () => {
 
 /**
  * 3. Interactive Character Guide 3D
- * - Tilts & reacts smoothly to cursor position.
- * - Features an ethereal ground aura that pulses.
- * - Emits particle sparkle burst on click.
- * - Connects to GuideStore to show insight dialogues.
+ * - Direct physical touch & click responses right on the canvas.
+ * - Magnetic 3D head/body tracking towards cursor pointer.
+ * - Dynamic hover scale-up (1.12x) and luminous aura intensification.
+ * - Click/Tap physical spring hop + pirouette spin + expanding golden stardust ripple ring.
+ * - Zero popups, zero extra windows; 100% integrated WebGL interactivity!
  */
 const InteractiveCharacterGuide: React.FC = () => {
   const { camera, pointer } = useThree();
   const groupRef = useRef<THREE.Group>(null);
+  const characterMeshGroupRef = useRef<THREE.Group>(null);
   const auraRef = useRef<THREE.Mesh>(null);
-  const pulseScaleRef = useRef(1.0);
+  const sparkRippleRef = useRef<THREE.Mesh>(null);
+
   const [textures, setTextures] = useState<(THREE.Texture | null)[]>(new Array(8).fill(null));
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
 
-  // Subscribe to guide store pulses cleanly without DOM React hook mismatch
-  useEffect(() => {
-    return useGuideStore.subscribe(() => {
-      pulseScaleRef.current = 1.35;
-      setTimeout(() => {
-        pulseScaleRef.current = 1.0;
-      }, 350);
-    });
-  }, []);
+  // Interactive Physics State
+  const isHoveredRef = useRef(false);
+  const hoverScaleRef = useRef(1.0);
+  const bounceYRef = useRef(0);
+  const bounceVelRef = useRef(0);
+  const spinAngleRef = useRef(0);
+  const spinVelRef = useRef(0);
+  const rippleProgressRef = useRef(1.0); // 1.0 = inactive, 0.0 = just clicked
 
   // Load all 8 transparent character pose assets
   useEffect(() => {
@@ -325,40 +326,86 @@ const InteractiveCharacterGuide: React.FC = () => {
     }
   }, []);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const progress = scrollManager.current;
     const time = state.clock.getElapsedTime();
+    const dt = Math.min(delta, 0.1);
 
+    // 1. Spring Physics for Click Bounce: Damped Harmonic Oscillator
+    const springK = 32.0;
+    const damping = 5.2;
+    const force = -springK * bounceYRef.current - damping * bounceVelRef.current;
+    bounceVelRef.current += force * dt;
+    bounceYRef.current += bounceVelRef.current * dt;
+
+    // 2. Playful Pirouette Spin Deceleration
+    spinAngleRef.current += spinVelRef.current * dt;
+    spinVelRef.current *= Math.exp(-4.2 * dt);
+
+    // 3. Smooth Hover Scale Lerp
+    const targetScale = isHoveredRef.current ? 1.12 : 1.0;
+    hoverScaleRef.current = THREE.MathUtils.lerp(hoverScaleRef.current, targetScale, 0.14);
+
+    // 4. Billboard & Position Guide in Camera Space
     if (groupRef.current) {
-      // Billboard the entire character guide to always face the camera
       groupRef.current.quaternion.copy(camera.quaternion);
 
-      // Dynamically position along camera's right side so it never occludes the flute
       const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
 
-      // Subtle breathing float + interactive cursor look-at parallax
-      const hoverY = Math.sin(time * 1.1) * 0.08 - 0.15;
+      // Base floating hover + click spring bounce + cursor parallax
+      const baseHover = Math.sin(time * (isHoveredRef.current ? 2.4 : 1.2)) * (isHoveredRef.current ? 0.12 : 0.07);
+      const totalY = -0.15 + baseHover + bounceYRef.current + pointer.y * 0.15;
+
       const targetPos = cameraRight
         .clone()
-        .multiplyScalar(2.1)
-        .add(cameraUp.clone().multiplyScalar(hoverY + pointer.y * 0.2));
-      targetPos.x += pointer.x * 0.3;
+        .multiplyScalar(2.15)
+        .add(cameraUp.clone().multiplyScalar(totalY));
+      targetPos.x += pointer.x * 0.25;
 
       groupRef.current.position.copy(targetPos);
-
-      // Gentle interactive 3D tilt towards cursor
-      groupRef.current.rotation.z = -pointer.x * 0.06;
     }
 
-    // Dynamic ground aura breathing + pulse response
+    // 5. Direct 3D Tilt & Spin on Character Mesh
+    if (characterMeshGroupRef.current) {
+      characterMeshGroupRef.current.scale.set(
+        hoverScaleRef.current,
+        hoverScaleRef.current,
+        hoverScaleRef.current
+      );
+
+      // Leans towards user's cursor + pirouette spin
+      characterMeshGroupRef.current.rotation.y = pointer.x * 0.35 + spinAngleRef.current;
+      characterMeshGroupRef.current.rotation.x = -pointer.y * 0.2;
+      characterMeshGroupRef.current.rotation.z = -pointer.x * 0.08;
+    }
+
+    // 6. Interactive Ground Aura
     if (auraRef.current) {
-      const basePulse = 1.0 + Math.sin(time * 2.0) * 0.15;
-      const finalScale = basePulse * pulseScaleRef.current;
-      auraRef.current.scale.set(finalScale, finalScale, 1);
+      const auraSpeed = isHoveredRef.current ? 3.5 : 1.8;
+      const basePulse = 1.0 + Math.sin(time * auraSpeed) * (isHoveredRef.current ? 0.25 : 0.12);
+      const auraScale = basePulse * (isHoveredRef.current ? 1.3 : 1.0);
+      auraRef.current.scale.set(auraScale, auraScale, 1);
+      const auraMat = auraRef.current.material as THREE.MeshBasicMaterial;
+      if (auraMat) {
+        auraMat.opacity = isHoveredRef.current ? 0.32 : 0.16;
+      }
     }
 
-    // Dynamic crossfade between character poses based on scroll progress
+    // 7. Expanding 3D Stardust Spark Ripple Ring on Click
+    if (sparkRippleRef.current && rippleProgressRef.current < 1.0) {
+      rippleProgressRef.current += dt * 2.2;
+      const t = Math.min(1.0, rippleProgressRef.current);
+      const rippleScale = 0.5 + t * 2.8;
+      sparkRippleRef.current.scale.set(rippleScale, rippleScale, rippleScale);
+      const rippleMat = sparkRippleRef.current.material as THREE.MeshBasicMaterial;
+      if (rippleMat) {
+        rippleMat.opacity = Math.max(0, (1 - t) * 0.85);
+      }
+      sparkRippleRef.current.visible = t < 1.0;
+    }
+
+    // 8. Dynamic crossfade between character poses based on scroll progress
     meshRefs.current.forEach((mesh, idx) => {
       if (mesh) {
         const dist = Math.abs(progress - idx);
@@ -384,59 +431,80 @@ const InteractiveCharacterGuide: React.FC = () => {
     [3.0, 4.2], // Pose 7 (ch8.png): Grand Stance
   ];
 
+  const handleClick = () => {
+    // Tactile 3D spring hop + pirouette spin + ripple trigger
+    bounceVelRef.current = 0.45;
+    spinVelRef.current = 8.5;
+    rippleProgressRef.current = 0.0;
+  };
+
   return (
     <group
       ref={groupRef}
-      position={[2.1, 0, 0]}
+      position={[2.15, 0, 0]}
       onPointerOver={() => {
         document.body.style.cursor = 'pointer';
-        useGuideStore.getState().setHovered(true);
+        isHoveredRef.current = true;
       }}
       onPointerOut={() => {
         document.body.style.cursor = 'auto';
-        useGuideStore.getState().setHovered(false);
+        isHoveredRef.current = false;
       }}
-      onClick={() => {
-        useGuideStore.getState().triggerPulse();
-      }}
+      onClick={handleClick}
     >
-      {/* Ethereal Luminous Ground Aura */}
+      {/* Ethereal Ground Aura Beneath Feet */}
       <mesh ref={auraRef} position={[0, -2.1, -0.05]}>
-        <circleGeometry args={[1.1, 32]} />
+        <ringGeometry args={[0.2, 1.25, 32]} />
         <meshBasicMaterial
           color="#d4af37"
           transparent
           opacity={0.16}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
+          side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* 8 Character Poses (billboarded and crossfaded) */}
-      {textures.map((tex, idx) => {
-        const [w, h] = poseSizes[idx] || [2.2, 4.2];
-        return (
-          <mesh
-            key={idx}
-            ref={(el) => (meshRefs.current[idx] = el)}
-            position={[0, 0, 0]}
-            visible={idx === 0}
-          >
-            <planeGeometry args={[w, h]} />
-            {tex ? (
-              <meshBasicMaterial
-                map={tex}
-                transparent
-                opacity={idx === 0 ? 1 : 0}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-              />
-            ) : (
-              <meshBasicMaterial transparent opacity={0} />
-            )}
-          </mesh>
-        );
-      })}
+      {/* 3D Expanding Golden Stardust Spark Ripple Ring on Click */}
+      <mesh ref={sparkRippleRef} position={[0, 0, 0.02]} visible={false}>
+        <ringGeometry args={[0.9, 1.1, 32]} />
+        <meshBasicMaterial
+          color="#ff2222"
+          transparent
+          opacity={0.8}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* Interactive 3D Character Mesh Group */}
+      <group ref={characterMeshGroupRef}>
+        {textures.map((tex, idx) => {
+          const [w, h] = poseSizes[idx] || [2.2, 4.2];
+          return (
+            <mesh
+              key={idx}
+              ref={(el) => (meshRefs.current[idx] = el)}
+              position={[0, 0, 0]}
+              visible={idx === 0}
+            >
+              <planeGeometry args={[w, h]} />
+              {tex ? (
+                <meshBasicMaterial
+                  map={tex}
+                  transparent
+                  opacity={idx === 0 ? 1 : 0}
+                  depthWrite={false}
+                  side={THREE.DoubleSide}
+                />
+              ) : (
+                <meshBasicMaterial transparent opacity={0} />
+              )}
+            </mesh>
+          );
+        })}
+      </group>
     </group>
   );
 };
