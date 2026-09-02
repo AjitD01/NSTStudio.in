@@ -30,7 +30,8 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
    * Smooth opacity falloff and scale transition matching Cartier aesthetic
    */
   const getStyle = (chapterIndex: number) => {
-    const diff = progress - chapterIndex;
+    const safeProgress = typeof progress === 'number' && !isNaN(progress) ? progress : 0;
+    const diff = safeProgress - chapterIndex;
     const dist = Math.abs(diff);
 
     // Hard cutoff at 0.52 guarantees only one chapter's text is visible at any given moment
