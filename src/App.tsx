@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { SceneCanvas } from './three/SceneCanvas';
 import { ChapterOverlay } from './components/ChapterOverlay';
 import { SectionIndicator } from './components/SectionIndicator';
+import { BrandDossierModal } from './components/BrandDossierModal';
 import { scrollManager, TOTAL_CHAPTERS } from './state/scrollStore';
-import { soundManager } from './audio/SoundManager';
 
 export const App: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
-  const [audioActive, setAudioActive] = useState<boolean>(false);
+  const [isDossierOpen, setIsDossierOpen] = useState<boolean>(false);
+  const [dossierPage, setDossierPage] = useState<number>(1);
 
   useEffect(() => {
     // Subscribe to the 60fps virtual scroll progress
@@ -19,15 +20,16 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const toggleSound = () => {
-    soundManager.toggle();
-    setAudioActive(!audioActive);
-  };
-
   const handleDotClick = (targetIndex: number) => {
     scrollManager.setTarget(targetIndex);
-    soundManager.playWarp();
   };
+
+  const handleOpenDossier = (page: number = 1) => {
+    setDossierPage(page);
+    setIsDossierOpen(true);
+  };
+
+  const currentChapter = Math.min(Math.max(Math.round(progress), 0), TOTAL_CHAPTERS - 1);
 
   return (
     <main className="nst-app-container">
@@ -47,11 +49,11 @@ export const App: React.FC = () => {
 
         <nav className="header-actions">
           <button
-            className={`btn-sound-toggle ${audioActive ? 'active' : ''}`}
-            onClick={toggleSound}
-            title="Toggle Audio Atmosphere"
+            className="header-btn-dossier"
+            onClick={() => handleOpenDossier(1)}
+            title="Open Holy Grail Brand Specification"
           >
-            <span className="sound-icon">{audioActive ? '✦ SOUND ON' : '◇ SOUND OFF'}</span>
+            BRAND DOSSIER 📖
           </button>
 
           <a
@@ -60,7 +62,7 @@ export const App: React.FC = () => {
             rel="noreferrer"
             className="header-link"
           >
-            INSTAGRAM @NSTSTUDIO.IN
+            @NSTSTUDIO.IN
           </a>
 
           <button
@@ -76,12 +78,23 @@ export const App: React.FC = () => {
       <SceneCanvas />
 
       {/* 4. Foreground Chapter Narrative Overlay */}
-      <ChapterOverlay progress={progress} />
+      <ChapterOverlay
+        currentChapter={currentChapter}
+        onNavigateChapter={handleDotClick}
+        onOpenDossier={handleOpenDossier}
+      />
 
       {/* 5. Cartier Vertical Dot Navigation */}
       <SectionIndicator
         scrollOffset={progress / (TOTAL_CHAPTERS - 1)}
         onSelectSection={handleDotClick}
+      />
+
+      {/* 6. High-Res Holy Grail Brand Dossier Modal */}
+      <BrandDossierModal
+        isOpen={isDossierOpen}
+        onClose={() => setIsDossierOpen(false)}
+        initialPage={dossierPage}
       />
     </main>
   );

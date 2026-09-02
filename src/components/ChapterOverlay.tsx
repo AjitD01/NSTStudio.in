@@ -1,413 +1,605 @@
 import React, { useState } from 'react';
-import { scrollManager } from '../state/scrollStore';
+import {
+  BRAND_MANIFESTO,
+  CORE_PILLARS,
+  LOGO_ANATOMY,
+  COLOR_PALETTE,
+  TYPOGRAPHY_SYSTEM,
+  MASCOT_POSES,
+  COLLATERAL_ITEMS,
+} from '../data/brandGuideData';
 
-interface ChapterProps {
-  progress: number;
+interface ChapterOverlayProps {
+  currentChapter: number;
+  onNavigateChapter: (index: number) => void;
+  onOpenDossier: (page?: number) => void;
 }
 
-export const ChapterOverlay: React.FC<ChapterProps> = ({ progress }) => {
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    discipline: 'branding',
-    message: '',
-  });
+export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
+  currentChapter,
+  onNavigateChapter,
+  onOpenDossier,
+}) => {
+  const [selectedPillarId, setSelectedPillarId] = useState('branding');
+  const [selectedMascotIndex, setSelectedMascotIndex] = useState(0);
+  const [activeLorePart, setActiveLorePart] = useState<string>('Flute');
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
 
-  const getStyle = (chapterIndex: number) => {
-    const diff = progress - chapterIndex; // -1 when approaching, +1 when leaving
-    const dist = Math.abs(diff);
-
-    // Hard cutoff at 0.52 guarantees only one chapter's text is visible at any given moment
-    if (dist >= 0.52) {
-      return { display: 'none' as const };
-    }
-
-    // High contrast opacity falloff
-    const opacity = Math.max(0, 1 - Math.pow(dist / 0.5, 2));
-    // Inward perspective transform: zooms slightly towards viewer as you scroll inward
-    const scale = 1 + diff * 0.14;
-    const translateY = -diff * 30;
-
-    return {
-      opacity,
-      transform: `translate3d(0, ${translateY}px, 0) scale(${scale})`,
-      pointerEvents: dist < 0.25 ? ('auto' as const) : ('none' as const),
-    };
+  const handleCopyHex = (hex: string) => {
+    navigator.clipboard?.writeText(hex);
+    setCopiedHex(hex);
+    setTimeout(() => setCopiedHex(null), 2000);
   };
 
   return (
-    <div className="chapter-overlay-container">
-      {/* ===== CHAPTER 0: PROLOGUE ===== */}
-      <div className="chapter-slide" style={getStyle(0)}>
-        <div className="chapter-center-content">
-          <div className="prologue-emblem">
-            <span className="prologue-kicker">00 / PROLOGUE</span>
-            <div className="prologue-monogram-ring">
-              <span className="monogram-text">NST</span>
-            </div>
+    <div className="chapter-overlay-root">
+      {/* =========================================================================
+          CHAPTER 0: PROLOGUE - THE STORYTELLING STUDIO
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 0 ? 'active' : ''}`}>
+        <div className="chapter-container">
+          <div className="brand-crest-lockup">
+            <span className="chapter-eyebrow">
+              {BRAND_MANIFESTO.name} · {BRAND_MANIFESTO.established.toUpperCase()}
+            </span>
+            <span className="chapter-eyebrow-accent">OFFICIAL BRAND SPECIFICATION</span>
           </div>
-          <h1 className="chapter-hero-title">
-            NST <span className="text-red">/</span> STUDIO
+
+          <h1 className="hero-monumental-title">
+            STORY <span className="text-crimson">FIRST.</span>
           </h1>
-          <p className="chapter-hero-tagline">
-            NIKUNJ STORYTELLING STUDIO · STORY FIRST
+
+          <p className="hero-manifesto-lead">
+            {BRAND_MANIFESTO.philosophy}
           </p>
-          <p className="chapter-hero-subtext">
-            “Transforming businesses into memorable brands through the sacred craft of story.”
-          </p>
-          <div className="inward-scroll-cue" onClick={() => scrollManager.setTarget(1)}>
-            <span className="cue-label">SCROLL INWARD TO ENTER</span>
-            <div className="cue-line-inward">
-              <div className="cue-dot-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ===== CHAPTER 1: THE FOUR UNIVERSES ===== */}
-      <div className="chapter-slide" style={getStyle(1)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">01 / OUR DISCIPLINES</span>
-            <h2 className="section-title">The Four Universes</h2>
-            <p className="section-desc">
-              Four specialized realms of craft, harmonized under one narrative vision.
-            </p>
-          </div>
-          <div className="universes-grid">
-            <div className="universe-card">
-              <div className="card-top">
-                <span className="universe-num">01</span>
-                <span className="universe-glyph">♦</span>
+          {/* Campaign Triptych: Seen, Noticed, Remembered */}
+          <div className="campaign-triptych-row">
+            {BRAND_MANIFESTO.campaignTriptych.map((item, idx) => (
+              <div key={idx} className="triptych-cell">
+                <span className="triptych-label">{item.label}</span>
+                <span className="triptych-sub">{item.sub}</span>
               </div>
-              <h3 className="universe-name">Branding</h3>
-              <p className="universe-text">
-                Identity systems, semiotic lore, and timeless brand tokens that speak before you say a word.
-              </p>
-              <div className="card-footer-meta">IDENTITY · VISION</div>
-            </div>
-            <div className="universe-card">
-              <div className="card-top">
-                <span className="universe-num">02</span>
-                <span className="universe-glyph">▶</span>
-              </div>
-              <h3 className="universe-name">Film</h3>
-              <p className="universe-text">
-                Cinematic brand films, documentary narratives, and evocative human stories captured on motion film.
-              </p>
-              <div className="card-footer-meta">CINEMATOGRAPHY</div>
-            </div>
-            <div className="universe-card">
-              <div className="card-top">
-                <span className="universe-num">03</span>
-                <span className="universe-glyph">●</span>
-              </div>
-              <h3 className="universe-name">Animation</h3>
-              <p className="universe-text">
-                Frame-by-frame 2D & 3D character motion that breathes spirit, vitality, and whimsy into abstract ideas.
-              </p>
-              <div className="card-footer-meta">KINETIC EXPRESSION</div>
-            </div>
-            <div className="universe-card">
-              <div className="card-top">
-                <span className="universe-num">04</span>
-                <span className="universe-glyph">◊</span>
-              </div>
-              <h3 className="universe-name">Learning</h3>
-              <p className="universe-text">
-                Masterclasses, design systems workshops, and visual storytelling pedagogy empowering the next generation.
-              </p>
-              <div className="card-footer-meta">PEDAGOGY · GUILD</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== CHAPTER 2: THE SACRED THREAD ===== */}
-      <div className="chapter-slide" style={getStyle(2)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">02 / NARRATIVE PHILOSOPHY</span>
-            <h2 className="section-title">The Sacred Thread</h2>
-            <p className="section-desc">
-              &ldquo;The thread that holds our story together&rdquo; &mdash; An unbroken bond between truth and form.
-            </p>
-          </div>
-          <div className="thread-manifesto-grid">
-            <div className="manifesto-card">
-              <span className="manifesto-kicker">01</span>
-              <h4>Root In Truth</h4>
-              <p>Every business possesses a core emotional truth. We unearth it through relentless research.</p>
-            </div>
-            <div className="manifesto-card">
-              <span className="manifesto-kicker">02</span>
-              <h4>Weave The Form</h4>
-              <p>Typography, color science, and symbols tailored as bespoke garments for the idea.</p>
-            </div>
-            <div className="manifesto-card">
-              <span className="manifesto-kicker">03</span>
-              <h4>The Unbroken Bond</h4>
-              <p>Like the sacred Rakhi, our creative bond with clients and audiences endures across time.</p>
-            </div>
-            <div className="manifesto-card">
-              <span className="manifesto-kicker">04</span>
-              <h4>Enduring Legacy</h4>
-              <p>Crafted not for quarterly hype cycles, but for decades of cultural staying power.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== CHAPTER 3: THE CRAFT ATELIER ===== */}
-      <div className="chapter-slide" style={getStyle(3)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">03 / SAVOIR-FAIRE</span>
-            <h2 className="section-title">The Craft Atelier</h2>
-            <p className="section-desc">
-              Precision typography, harmonious scales, and the unmistakable Rose Hot signature.
-            </p>
-          </div>
-          <div className="atelier-showcase">
-            <div className="atelier-card font-card">
-              <span className="card-meta">PRIMARY SANS</span>
-              <h3 className="font-sample-satoshi">Satoshi Geometric</h3>
-              <p className="specimen-desc">Clean, architectural, authoritative. For contemporary brand headlines and interfaces.</p>
-            </div>
-            <div className="atelier-card font-card">
-              <span className="card-meta">TYPEWRITER HERITAGE</span>
-              <h3 className="font-sample-courier">Courier Prime</h3>
-              <p className="specimen-desc">The authentic scriptwriter's voice. Honest, rhythmic, literary precision.</p>
-            </div>
-            <div className="atelier-card color-card">
-              <span className="card-meta">SIGNATURE CHROMATIC</span>
-              <h3 className="color-name-rose">Rose Hot</h3>
-              <p className="specimen-desc">A rich fusion of Crimson Passion (#C8102E) and Ethereal Rose (#FF6B9D).</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== CHAPTER 4: SELECTED COMMISSIONS ===== */}
-      <div className="chapter-slide" style={getStyle(4)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">04 / PORTFOLIO</span>
-            <h2 className="section-title">Selected Commissions</h2>
-            <p className="section-desc">
-              Highlights from the studio archive, translating deep lore into tactile artifacts.
-            </p>
-          </div>
-          <div className="gallery-grid">
-            <div className="gallery-card">
-              <span className="card-kicker">IDENTITY SYSTEM</span>
-              <h4>SafeHold Brand Identity</h4>
-              <p>Security and warmth unified into a protective modern monogram.</p>
-            </div>
-            <div className="gallery-card">
-              <span className="card-kicker">EDITORIAL FILM</span>
-              <h4>Raksha Bandhan Heritage</h4>
-              <p>A cinematic celebration of the thread that binds families together.</p>
-            </div>
-            <div className="gallery-card">
-              <span className="card-kicker">COLOR STUDY</span>
-              <h4>Rose Hot Chromatic</h4>
-              <p>Exploring emotional intensity through fluid gradient dynamics.</p>
-            </div>
-            <div className="gallery-card">
-              <span className="card-kicker">TYPOGRAPHY POSTER</span>
-              <h4>Courier Prime Red Ink</h4>
-              <p>Homage to manual screenwriting and the tactile intimacy of letters.</p>
-            </div>
-            <div className="gallery-card">
-              <span className="card-kicker">CHARACTER DESIGN</span>
-              <h4>The Storyteller Mascot</h4>
-              <p>Geometric Krishna figure with flute and film reel medallion.</p>
-            </div>
-            <div className="gallery-card">
-              <span className="card-kicker">SEMIOTICS</span>
-              <h4>"Simple Until You Realize"</h4>
-              <p>The philosophical reduction of complexity into timeless elegance.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== CHAPTER 5: LIVING ARCHIVE ===== */}
-      <div className="chapter-slide" style={getStyle(5)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">05 / SOCIAL ARCHIVE</span>
-            <h2 className="section-title">@nststudio.in</h2>
-            <p className="section-desc">
-              Real-time dispatches, behind-the-scenes sketches, and studio experiments.
-            </p>
-          </div>
-          <div className="social-pill-header">
-            <span className="social-stat">21 STUDIO POSTS</span>
-            <span className="stat-separator">&middot;</span>
-            <span className="social-stat">11 CRAFT FOLLOWERS</span>
-            <span className="stat-separator">&middot;</span>
-            <span className="social-stat">DAILY NARRATIVE STUDIO</span>
-          </div>
-          <div className="instagram-grid">
-            {[
-              { id: '01', title: 'The Thread' },
-              { id: '02', title: 'SafeHold Monogram' },
-              { id: '03', title: 'Bond Never Breaks' },
-              { id: '04', title: 'Courier In Red' },
-              { id: '05', title: 'Rose Hot Flow' },
-              { id: '06', title: 'Satoshi Light' },
-              { id: '07', title: 'Writing Desk' },
-              { id: '08', title: 'Mascot Flute' },
-              { id: '09', title: 'Simple Means' },
-            ].map((item) => (
-              <a
-                key={item.id}
-                href="https://www.instagram.com/nststudio.in"
-                target="_blank"
-                rel="noreferrer"
-                className="insta-tile"
-              >
-                <span className="tile-num">{item.id}</span>
-                <span className="tile-label">{item.title}</span>
-                <span className="tile-arrow">↗</span>
-              </a>
             ))}
           </div>
-          <div className="archive-cta">
-            <a
-              href="https://www.instagram.com/nststudio.in"
-              target="_blank"
-              rel="noreferrer"
-              className="btn-luxury-outline"
+
+          <div className="hero-action-cluster">
+            <button
+              className="btn-luxury-primary"
+              onClick={() => onNavigateChapter(1)}
             >
-              FOLLOW @NSTSTUDIO.IN ON INSTAGRAM &rarr;
-            </a>
+              ENTER 3D UNIVERSE <span className="btn-arrow">↓</span>
+            </button>
+            <button
+              className="btn-luxury-secondary"
+              onClick={() => onOpenDossier(1)}
+            >
+              OPEN BRAND DOSSIER 📖
+            </button>
+          </div>
+
+          <div className="hero-scroll-cue">
+            <div className="scroll-needle-track">
+              <div className="scroll-needle-thumb" />
+            </div>
+            <span className="scroll-cue-text">INWARD WARP · SCROLL DOWN</span>
           </div>
         </div>
       </div>
 
-      {/* ===== CHAPTER 6: PRIVATE COMMISSION ===== */}
-      <div className="chapter-slide" style={getStyle(6)}>
-        <div className="chapter-center-content">
-          <div className="chapter-header">
-            <span className="section-eyebrow">06 / PRIVATE COMMISSION</span>
-            <h2 className="section-title">Begin Your Story</h2>
-            <p className="section-desc">
-              Every iconic creation starts with a single dialogue. Tell us about your vision.
+      {/* =========================================================================
+          CHAPTER 1: THE THREE PILLARS
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 1 ? 'active' : ''}`}>
+        <div className="chapter-container wide">
+          <div className="chapter-header-compact">
+            <span className="chapter-kicker">CHAPTER I / 07 · FOUNDATIONAL DISCIPLINES</span>
+            <h2 className="chapter-section-title">THE THREE PILLARS OF NIKUNJ</h2>
+            <p className="chapter-section-desc">
+              {BRAND_MANIFESTO.vision}
             </p>
           </div>
-          <div className="commission-box">
-            {formSubmitted ? (
-              <div className="commission-success">
-                <span className="success-icon">&check;</span>
-                <h3>Inquiry Received</h3>
-                <p>We will review your narrative premise and respond within 24 hours.</p>
-                <button
-                  className="btn-luxury-outline mt-4"
-                  onClick={() => setFormSubmitted(false)}
+
+          {/* Pillar Selector Tabs */}
+          <div className="pillars-tab-row">
+            {CORE_PILLARS.map((pillar) => (
+              <button
+                key={pillar.id}
+                className={`pillar-tab-btn ${selectedPillarId === pillar.id ? 'active' : ''}`}
+                onClick={() => setSelectedPillarId(pillar.id)}
+              >
+                <span className="tab-number">{pillar.number}</span>
+                <span className="tab-title">{pillar.title}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Active Pillar Card */}
+          {(() => {
+            const activePillar = CORE_PILLARS.find((p) => p.id === selectedPillarId) || CORE_PILLARS[0];
+            return (
+              <div className="pillar-spotlight-card">
+                <div className="pillar-spotlight-content">
+                  <span className="pillar-accent-tag" style={{ color: activePillar.accentColor }}>
+                    {activePillar.subtitle}
+                  </span>
+                  <h3 className="pillar-spotlight-heading">{activePillar.title}</h3>
+                  <p className="pillar-spotlight-tagline">“{activePillar.tagline}”</p>
+                  <p className="pillar-spotlight-text">{activePillar.description}</p>
+
+                  <div className="pillar-disciplines-list">
+                    <span className="list-title">Core Disciplines & Deliverables:</span>
+                    <div className="disciplines-chips">
+                      {activePillar.subDisciplines.map((d, i) => (
+                        <span key={i} className="discipline-chip">
+                          <span className="chip-bullet">✦</span> {d}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="spotlight-action">
+                    <button
+                      className="btn-card-action"
+                      onClick={() => onOpenDossier(9)}
+                    >
+                      VIEW IN BRAND GUIDE (P.09) →
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pillar-spotlight-media">
+                  <img
+                    src={activePillar.image}
+                    alt={activePillar.title}
+                    className="pillar-media-img"
+                  />
+                  <div className="pillar-media-badge">
+                    <span>PLATE {activePillar.number}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* =========================================================================
+          CHAPTER 2: LOGO ANATOMY & SEMIOTIC GENESIS
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 2 ? 'active' : ''}`}>
+        <div className="chapter-container wide">
+          <div className="chapter-header-compact">
+            <span className="chapter-kicker">CHAPTER II / 07 · SEMIOTIC GENESIS</span>
+            <h2 className="chapter-section-title">THE ANATOMY OF THE MARK</h2>
+            <p className="chapter-section-desc">
+              Nikunj is historically associated with Lord Krishna. The logo embodies the letter 'N',
+              the contemplative sitting posture, and the vibrant red flute.
+            </p>
+          </div>
+
+          <div className="logo-anatomy-grid">
+            {/* Left: Anatomical interactive parts */}
+            <div className="anatomy-parts-list">
+              {LOGO_ANATOMY.map((part) => (
+                <div
+                  key={part.part}
+                  className={`anatomy-part-card ${activeLorePart === part.part ? 'active' : ''}`}
+                  onClick={() => setActiveLorePart(part.part)}
                 >
-                  SUBMIT ANOTHER INQUIRY
+                  <div className="part-card-header">
+                    <span className="part-tag">{part.part}</span>
+                    <span className="part-name">{part.name}</span>
+                  </div>
+                  <div className="part-symbolism">{part.symbolism}</div>
+                  <p className="part-lore">{part.lore}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: Master Emblem Inspection Box */}
+            <div className="anatomy-visual-pedestal">
+              <div className="pedestal-emblem-wrap">
+                <img
+                  src="/brand/p10_0.png"
+                  alt="NST Master Brand Mark"
+                  className="master-emblem-graphic"
+                />
+                <div className="emblem-callout flute-callout">
+                  <div className="callout-line" />
+                  <div className="callout-content">
+                    <span className="callout-badge">#FF2222</span>
+                    <span className="callout-text">The Red Flute · Emotional Core</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pedestal-footer-info">
+                <div className="pedestal-quote">
+                  “The flute symbolizes storytelling, human connection, and vibrant creative energy.”
+                </div>
+                <button
+                  className="btn-card-action"
+                  onClick={() => onOpenDossier(15)}
+                >
+                  EXAMINE LOGO CONSTRUCTION (P.15) →
                 </button>
               </div>
-            ) : (
-              <form
-                className="commission-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setFormSubmitted(true);
-                }}
-              >
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>YOUR NAME</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Arthur Conan"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>EMAIL ADDRESS</label>
-                    <input
-                      type="email"
-                      placeholder="e.g. studio@domain.com"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>COMMISSION UNIVERSE</label>
-                  <select
-                    value={formData.discipline}
-                    onChange={(e) => setFormData({ ...formData, discipline: e.target.value })}
-                  >
-                    <option value="branding">01 / Brand Identity System</option>
-                    <option value="film">02 / Narrative Brand Film</option>
-                    <option value="animation">03 / 2D &amp; 3D Kinetic Animation</option>
-                    <option value="learning">04 / Pedagogy &amp; Design Systems</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>THE NARRATIVE PREMISE</label>
-                  <textarea
-                    rows={4}
-                    placeholder="Describe the challenge, aspiration, or story you want to tell..."
-                    required
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  />
-                </div>
-                <button type="submit" className="btn-luxury-primary w-full">
-                  SUBMIT PRIVATE COMMISSION &rarr;
-                </button>
-              </form>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ===== CHAPTER 7: MAISON EPILOGUE ===== */}
-      <div className="chapter-slide" style={getStyle(7)}>
-        <div className="chapter-center-content footer-content">
-          <div className="footer-monogram">NST</div>
-          <p className="footer-lead">NIKUNJ STORYTELLING STUDIO</p>
-          <div className="footer-columns">
-            <div className="footer-col">
-              <span className="col-title">UNIVERSES</span>
-              <span>Branding</span>
-              <span>Film</span>
-              <span>Animation</span>
-              <span>Learning</span>
+      {/* =========================================================================
+          CHAPTER 3: ATELIER STANDARDS - COLOR, TYPO, MASCOT
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 3 ? 'active' : ''}`}>
+        <div className="chapter-container wide">
+          <div className="chapter-header-compact">
+            <span className="chapter-kicker">CHAPTER III / 07 · BRAND ATELIER</span>
+            <h2 className="chapter-section-title">COLOR SCIENCE & BRAND FACE</h2>
+            <p className="chapter-section-desc">
+              Harmonious chromatic precision and the 8 classical poses of the storytelling mascot.
+            </p>
+          </div>
+
+          <div className="atelier-split-layout">
+            {/* Color Swatches */}
+            <div className="atelier-colors-panel">
+              <h4 className="panel-title">OFFICIAL CHROMATIC FORMULA</h4>
+              <div className="color-swatches-column">
+                {COLOR_PALETTE.map((c) => (
+                  <div key={c.hex} className="swatch-item">
+                    <div
+                      className="swatch-chip"
+                      style={{ backgroundColor: c.hex, border: c.hex === '#F9F9F9' ? '1px solid #444' : 'none' }}
+                    />
+                    <div className="swatch-meta">
+                      <div className="swatch-top">
+                        <span className="swatch-name">{c.name}</span>
+                        <button
+                          className="btn-copy-hex"
+                          onClick={() => handleCopyHex(c.hex)}
+                          title="Click to Copy Hex"
+                        >
+                          {copiedHex === c.hex ? 'COPIED!' : c.hex}
+                        </button>
+                      </div>
+                      <span className="swatch-role">{c.role}</span>
+                      <span className="swatch-code">{c.cmyk} · RGB({c.rgb})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Typography Preview */}
+              <div className="typography-box">
+                <h4 className="panel-title">TYPOGRAPHY HIERARCHY</h4>
+                <div className="typo-items">
+                  {TYPOGRAPHY_SYSTEM.map((t, idx) => (
+                    <div key={idx} className="typo-spec-row">
+                      <span className="typo-role">{t.role}</span>
+                      <span className="typo-fam">{t.family} ({t.size})</span>
+                      <p className="typo-sample">{t.sample}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="footer-col">
-              <span className="col-title">ATELIER</span>
-              <span>Savoir-Faire</span>
-              <span>The Sacred Thread</span>
-              <span>Brand Lore</span>
-            </div>
-            <div className="footer-col">
-              <span className="col-title">STUDIO</span>
-              <span>Instagram</span>
-              <span>nststudio.in@gmail.com</span>
-              <span>Surat / Mumbai, India</span>
+
+            {/* Mascot 8 Poses Carousel */}
+            <div className="atelier-mascot-panel">
+              <div className="mascot-panel-header">
+                <h4 className="panel-title">BRAND FACE: THE 8 MASCOT POSES</h4>
+                <span className="mascot-page-link" onClick={() => onOpenDossier(39)}>
+                  PAGE 39 ↗
+                </span>
+              </div>
+
+              {/* Mascot Composite Plate */}
+              <div className="mascot-plate-wrapper">
+                <img
+                  src="/brand/p39_0.png"
+                  alt="8 Poses of the Krishna Mascot"
+                  className="mascot-plate-img"
+                />
+              </div>
+
+              {/* Pose Selector Tabs */}
+              <div className="mascot-pose-selector">
+                <div className="pose-selector-tabs">
+                  {MASCOT_POSES.map((pose, idx) => (
+                    <button
+                      key={pose.id}
+                      className={`pose-num-btn ${selectedMascotIndex === idx ? 'active' : ''}`}
+                      onClick={() => setSelectedMascotIndex(idx)}
+                    >
+                      {String(pose.id).padStart(2, '0')}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pose-active-detail">
+                  <div className="pose-active-title">
+                    {MASCOT_POSES[selectedMascotIndex].name}
+                  </div>
+                  <span className="pose-active-role">
+                    {MASCOT_POSES[selectedMascotIndex].role}
+                  </span>
+                  <p className="pose-active-desc">
+                    {MASCOT_POSES[selectedMascotIndex].description}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="footer-bottom">
-            <p>&copy; 2024–2026 NST STUDIO &middot; ALL RIGHTS RESERVED &middot; STORY FIRST</p>
-            <p className="footer-quote">&ldquo;Transforming businesses into memorable brands through story.&rdquo;</p>
-            <button
-              className="btn-return-top"
-              onClick={() => scrollManager.setTarget(0)}
-            >
-              &uarr; RETURN TO PROLOGUE
-            </button>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          CHAPTER 4: SELECTED COMMISSIONS & TACTILE COLLATERALS
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 4 ? 'active' : ''}`}>
+        <div className="chapter-container wide">
+          <div className="chapter-header-compact">
+            <span className="chapter-kicker">CHAPTER IV / 07 · PHYSICAL ATELIER</span>
+            <h2 className="chapter-section-title">TACTILE COMMISSIONS & COLLATERALS</h2>
+            <p className="chapter-section-desc">
+              Photorealistic executive stationery and monumental campaign installations from the Holy Grail specification.
+            </p>
+          </div>
+
+          <div className="collaterals-gallery-grid">
+            {COLLATERAL_ITEMS.map((item) => (
+              <div
+                key={item.id}
+                className="collateral-card-modern"
+                onClick={() => onOpenDossier(item.id === 'visiting-cards' ? 57 : item.id === 'executive-letterhead' ? 59 : 61)}
+              >
+                <div className="collateral-media-frame">
+                  <img src={item.image} alt={item.title} className="collateral-img" />
+                  <div className="collateral-overlay-badge">
+                    <span>{item.category}</span>
+                  </div>
+                  <div className="hover-inspect-cue">INSPECT SPECIFICATION ↗</div>
+                </div>
+
+                <div className="collateral-info-pane">
+                  <h4 className="collateral-title">{item.title}</h4>
+                  <span className="collateral-subtitle">{item.subtitle}</span>
+                  <p className="collateral-desc">{item.description}</p>
+
+                  <div className="collateral-detail-chips">
+                    {item.details.slice(0, 2).map((d, i) => (
+                      <span key={i} className="detail-chip">
+                        ✦ {d}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          CHAPTER 5: SOCIAL ARCHIVE & EDITORIAL CAMPAIGN
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 5 ? 'active' : ''}`}>
+        <div className="chapter-container wide">
+          <div className="chapter-header-compact">
+            <span className="chapter-kicker">CHAPTER V / 07 · LIVING ARCHIVE</span>
+            <h2 className="chapter-section-title">SOCIAL ARCHIVE & EDITORIAL CODES</h2>
+            <p className="chapter-section-desc">
+              High-fashion storytelling campaigns and rigorous 1080×1350 editorial grid standards.
+            </p>
+          </div>
+
+          <div className="social-editorial-grid">
+            <div className="editorial-main-card">
+              <img
+                src="/brand/p47_0.jpg"
+                alt="New Era of Design Editorial"
+                className="editorial-fashion-img"
+              />
+              <div className="editorial-card-content">
+                <span className="editorial-tag">CAMPAIGN STORYTELLING</span>
+                <h3 className="editorial-heading">NEW ERA OF DESIGN</h3>
+                <p className="editorial-text">
+                  Combining high-fashion editorial styling with cinematic narrative depth.
+                  Every social frame adheres to strict 90px clear margin guidelines ensuring typographic clarity.
+                </p>
+                <div className="editorial-specs-row">
+                  <span className="spec-tag">POST: 1080 × 1350 PX (4:5)</span>
+                  <span className="spec-tag">STORY: 1080 × 1920 PX (9:16)</span>
+                  <span className="spec-tag">GRID: 90PX CLEAR MARGINS</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="editorial-side-column">
+              <div className="editorial-side-card">
+                <img
+                  src="/brand/p47_1.jpg"
+                  alt="Editorial Layout Spread"
+                  className="editorial-side-img"
+                />
+                <div className="side-card-info">
+                  <h4 className="side-title">THE RED BRUSH IDENTITY</h4>
+                  <p className="side-desc">The dynamic brushstroke signifies raw human storytelling power.</p>
+                </div>
+              </div>
+
+              <div className="editorial-side-card instagram-hub-card">
+                <div className="hub-header">
+                  <span className="hub-brand">@nststudio.in</span>
+                  <span className="hub-status">LIVE FEED</span>
+                </div>
+                <p className="hub-pitch">
+                  Follow our continuous journey across Pune, Mumbai, and global storytelling ateliers.
+                </p>
+                <a
+                  href="https://instagram.com/nststudio.in"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-instagram-link"
+                >
+                  VISIT INSTAGRAM ARCHIVE ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          CHAPTER 6: PRIVATE COMMISSIONS & STUDIO INQUIRY
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 6 ? 'active' : ''}`}>
+        <div className="chapter-container">
+          <div className="chapter-header-compact text-center">
+            <span className="chapter-kicker">CHAPTER VI / 07 · PRIVATE COMMISSIONS</span>
+            <h2 className="chapter-section-title">INITIATE A DIALOGUE</h2>
+            <p className="chapter-section-desc">
+              Every transformative brand begins with a genuine conversation.
+              Connect directly with our creative directors in Pune & Mumbai.
+            </p>
+          </div>
+
+          <div className="commission-contact-layout">
+            <div className="studio-coordinates-box">
+              <div className="studio-card-brand">
+                <h3 className="studio-name">{BRAND_MANIFESTO.name}</h3>
+                <span className="studio-legal">{BRAND_MANIFESTO.fullName}</span>
+              </div>
+
+              <div className="coordinates-list">
+                <div className="coord-item">
+                  <span className="coord-label">STUDIO HUBS</span>
+                  <span className="coord-val">{BRAND_MANIFESTO.location}</span>
+                </div>
+
+                <div className="coord-item">
+                  <span className="coord-label">DIRECT INQUIRIES</span>
+                  <a href={`mailto:${BRAND_MANIFESTO.email}`} className="coord-val link">
+                    {BRAND_MANIFESTO.email}
+                  </a>
+                </div>
+
+                <div className="coord-item">
+                  <span className="coord-label">STUDIO DIRECT</span>
+                  <a href={`tel:${BRAND_MANIFESTO.phone.replace(/\\s+/g, '')}`} className="coord-val link">
+                    {BRAND_MANIFESTO.phone}
+                  </a>
+                </div>
+
+                <div className="coord-item">
+                  <span className="coord-label">CREATIVE DIRECTION</span>
+                  <span className="coord-val">{BRAND_MANIFESTO.founder}</span>
+                </div>
+              </div>
+
+              <div className="studio-promise-seal">
+                <span className="seal-tag">FOUNDATION</span>
+                <span className="seal-text">“Stories are created, shared, and taught.”</span>
+              </div>
+            </div>
+
+            {/* Quick Inquiry Form */}
+            <div className="commission-form-card">
+              <h4 className="form-card-title">PROJECT COMMENCEMENT BRIEF</h4>
+              <form onSubmit={(e) => { e.preventDefault(); alert("Thank you for your brief. Nikunj Storytelling Studio will be in touch shortly."); }}>
+                <div className="form-group">
+                  <label className="form-label">YOUR NAME / ORGANIZATION</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Maison de Luxe / Founder Name"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">EMAIL COORDINATES</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="founder@domain.com"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">PRIMARY DISCIPLINE</label>
+                  <select className="form-select">
+                    <option value="branding">Branding & Visual Identity System</option>
+                    <option value="film">Film & Cinematic Animation</option>
+                    <option value="education">Creative Education & Masterclasses</option>
+                    <option value="comprehensive">Comprehensive Brand Transformation</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">PROJECT NARRATIVE</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Briefly describe the story you desire to tell..."
+                    className="form-textarea"
+                  />
+                </div>
+
+                <button type="submit" className="btn-luxury-submit">
+                  SUBMIT BRIEF TO ATELIER →
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          CHAPTER 7: EPILOGUE & BRAND ARCHIVE
+         ========================================================================= */}
+      <div className={`chapter-view ${currentChapter === 7 ? 'active' : ''}`}>
+        <div className="chapter-container text-center">
+          <span className="chapter-kicker">EPILOGUE / 07 · THE COMPLETE SPECIFICATION</span>
+          <h2 className="hero-monumental-title">
+            THE ARCHIVE OF <span className="text-crimson">NIKUNJ</span>
+          </h2>
+          <p className="hero-manifesto-lead">
+            {BRAND_MANIFESTO.promise}
+          </p>
+
+          <div className="archive-launch-card">
+            <div className="archive-launch-info">
+              <span className="archive-tag">HOLY GRAIL DOCUMENTATION</span>
+              <h3 className="archive-title">NST BRAND GUIDELINE · MARCH 2026</h3>
+              <p className="archive-desc">
+                The comprehensive 61-plate master manual containing the complete semiotics,
+                color formulations, typography hierarchies, mascot poses, and collateral blueprints.
+              </p>
+            </div>
+
+            <div className="archive-launch-actions">
+              <button
+                className="btn-luxury-primary"
+                onClick={() => onOpenDossier(1)}
+              >
+                BROWSE COMPLETE BRAND GUIDELINE (26 RETINA PLATES) 📖
+              </button>
+              <button
+                className="btn-luxury-secondary"
+                onClick={() => onNavigateChapter(0)}
+              >
+                RETURN TO PROLOGUE ↑
+              </button>
+            </div>
+          </div>
+
+          <div className="studio-colophon">
+            <span>© 2026 NIKUNJ STORYTELLING STUDIO · PUNE & MUMBAI, MAHARASHTRA</span>
+            <span>ALL RIGHTS RESERVED · STORY FIRST.</span>
           </div>
         </div>
       </div>
