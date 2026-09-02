@@ -8,46 +8,45 @@ const TOTAL_CHAPTERS = 8;
 
 /**
  * 1. Inward Depth Camera Controller:
- * Smoothly translates camera inward along Z axis according to virtual scroll progress.
- * Adds tactile mouse parallax and velocity-responsive pitch/roll.
+ * Translates camera inward along Z axis smoothly.
+ * Keeps camera centered on the 3D sculptures without clipping or tilting out of view.
  */
 export const InwardCamera: React.FC = () => {
   const { camera, pointer } = useThree();
   const prevProgressRef = useRef(0);
 
   useFrame(() => {
-    // 60fps lerped virtual scroll progress
     const progress = scrollManager.update(0.08);
     const delta = progress - prevProgressRef.current;
     prevProgressRef.current = progress;
 
-    // Target camera Z position: flies inward into -Z
-    const targetZ = -progress * CHAPTER_SPACING;
-    const targetX = pointer.x * 2.0;
-    const targetY = pointer.y * 1.4;
+    // Target camera Z position: starts at Z=10 for Chapter 0 (sculpture at Z=0)
+    const targetZ = 10 - progress * CHAPTER_SPACING;
+    const targetX = pointer.x * 0.8;
+    const targetY = pointer.y * 0.6;
 
     // Smooth lerp camera position
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.09);
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.06);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.06);
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
 
-    // Dynamic bank/tilt based on scroll speed & pointer
-    camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, -delta * 0.4, 0.05);
+    // Subtle bank on scroll
+    camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, -delta * 0.3, 0.05);
 
-    // Look directly into the inward tunnel depth
-    const lookTargetZ = camera.position.z - 22;
-    camera.lookAt(targetX * 0.25, targetY * 0.25, lookTargetZ);
+    // Direct forward gaze into the tunnel center
+    const lookTargetZ = camera.position.z - 25;
+    camera.lookAt(targetX * 0.15, targetY * 0.15, lookTargetZ);
   });
 
   return null;
 };
 
 /**
- * 2. Deep Warp Cosmic Dust & Crimson Embers:
- * 4,200 luxury particles spanning the full length of the inward tunnel.
+ * 2. Deep Tunnel Cosmic Dust & Embers:
+ * Floating stars and subtle crimson embers providing spacious atmospheric depth.
  */
 const DeepTunnelParticles: React.FC = () => {
-  const count = 4200;
+  const count = 2800;
   const meshRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
@@ -56,22 +55,18 @@ const DeepTunnelParticles: React.FC = () => {
     const colorGold = new THREE.Color('#e0a96d');
     const colorRed = new THREE.Color('#ff2222');
     const colorWhite = new THREE.Color('#f0f0f5');
-    const colorAmber = new THREE.Color('#ffd166');
 
     for (let i = 0; i < count; i++) {
-      // Cylinder distribution along Z tunnel
-      const radius = 3.5 + Math.random() * 24;
+      const radius = 3.0 + Math.random() * 22;
       const angle = Math.random() * Math.PI * 2;
-      const z = 25 - Math.random() * (TOTAL_CHAPTERS * CHAPTER_SPACING + 45);
+      const z = 20 - Math.random() * (TOTAL_CHAPTERS * CHAPTER_SPACING + 30);
 
       pos[i * 3] = Math.cos(angle) * radius;
       pos[i * 3 + 1] = Math.sin(angle) * radius;
       pos[i * 3 + 2] = z;
 
-      // Color mix: 50% white/silver dust, 30% warm gold, 20% crimson embers
       const rand = Math.random();
-      const chosenColor =
-        rand < 0.5 ? colorWhite : rand < 0.75 ? colorGold : rand < 0.9 ? colorAmber : colorRed;
+      const chosenColor = rand < 0.6 ? colorWhite : rand < 0.85 ? colorGold : colorRed;
       col[i * 3] = chosenColor.r;
       col[i * 3 + 1] = chosenColor.g;
       col[i * 3 + 2] = chosenColor.b;
@@ -81,7 +76,7 @@ const DeepTunnelParticles: React.FC = () => {
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.z = state.clock.getElapsedTime() * 0.02;
+      meshRef.current.rotation.z = state.clock.getElapsedTime() * 0.015;
     }
   });
 
@@ -92,10 +87,10 @@ const DeepTunnelParticles: React.FC = () => {
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.18}
+        size={0.16}
         vertexColors
         transparent
-        opacity={0.85}
+        opacity={0.8}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -104,96 +99,40 @@ const DeepTunnelParticles: React.FC = () => {
 };
 
 /**
- * 3. Architectural Tunnel Portals (Cartier Pavilion Arches):
- * Sleek octagonal and circular portal frames spaced through the corridor
- * giving the inward journey a sense of physical architectural rhythm.
- */
-const ArchitecturalTunnelPortals: React.FC = () => {
-  const portals = useMemo(() => {
-    const list = [];
-    const step = CHAPTER_SPACING / 2; // Portal every 14 units
-    const totalPortals = TOTAL_CHAPTERS * 2 + 2;
-    for (let i = 0; i < totalPortals; i++) {
-      list.push({
-        z: 10 - i * step,
-        scale: 1 + (i % 2 === 0 ? 0.2 : 0),
-        isMajor: i % 2 === 0,
-      });
-    }
-    return list;
-  }, []);
-
-  return (
-    <group>
-      {portals.map((p, idx) => (
-        <group key={idx} position={[0, 0, p.z]} scale={p.scale}>
-          {/* Outer architectural octagonal ring */}
-          <mesh>
-            <ringGeometry args={[8.2, 8.35, p.isMajor ? 8 : 24]} />
-            <meshStandardMaterial
-              color={p.isMajor ? '#d4af37' : '#33333e'}
-              emissive={p.isMajor ? '#3d2e12' : '#000000'}
-              roughness={0.3}
-              metalness={0.9}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-          {/* Subtle glowing rim */}
-          {p.isMajor && (
-            <mesh>
-              <ringGeometry args={[8.35, 8.42, 8]} />
-              <meshBasicMaterial
-                color="#ff2222"
-                transparent
-                opacity={0.3}
-                side={THREE.DoubleSide}
-                blending={THREE.AdditiveBlending}
-              />
-            </mesh>
-          )}
-        </group>
-      ))}
-    </group>
-  );
-};
-
-/**
- * 4. The Sacred Spline Thread:
- * Continuous red silk ribbon winding through the entire inward corridor connecting all chambers.
+ * 3. Sacred Spline Tube:
+ * Continuous red silk thread traversing the inward universe.
  */
 const SacredSplineTube: React.FC = () => {
   const curve = useMemo(() => {
     const points: THREE.Vector3[] = [];
     for (let i = 0; i <= TOTAL_CHAPTERS + 1; i++) {
       const z = -i * CHAPTER_SPACING;
-      const x = Math.sin(i * 1.35) * 4.8;
-      const y = Math.cos(i * 1.1) * 3.6;
+      const x = Math.sin(i * 1.3) * 4.2;
+      const y = Math.cos(i * 1.1) * 3.2;
       points.push(new THREE.Vector3(x, y, z));
     }
     return new THREE.CatmullRomCurve3(points, false, 'centripetal');
   }, []);
 
-  const tubeGeo = useMemo(() => new THREE.TubeGeometry(curve, 280, 0.09, 12, false), [curve]);
-  const haloGeo = useMemo(() => new THREE.TubeGeometry(curve, 280, 0.26, 8, false), [curve]);
+  const tubeGeo = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.08, 10, false), [curve]);
+  const haloGeo = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.22, 8, false), [curve]);
 
   return (
     <group>
-      {/* Inner solid silk ribbon */}
       <mesh geometry={tubeGeo}>
         <meshStandardMaterial
           color="#ff2222"
           emissive="#ff1e46"
-          emissiveIntensity={1.5}
+          emissiveIntensity={1.4}
           roughness={0.2}
           metalness={0.6}
         />
       </mesh>
-      {/* Glowing outer aura */}
       <mesh geometry={haloGeo}>
         <meshBasicMaterial
           color="#ff3366"
           transparent
-          opacity={0.28}
+          opacity={0.25}
           blending={THREE.AdditiveBlending}
           wireframe
         />
@@ -203,10 +142,10 @@ const SacredSplineTube: React.FC = () => {
 };
 
 /**
- * 5. Chapter 0: The Prologue Gateway & 3D Red Flute / Film Reel
+ * 4. Chapter 0: The Prologue Gateway — Centerpiece Sculpture
+ * Positioned exactly at (0, 0, 0) so when camera is at (0, 0, 10), it is centered in full view!
  */
 const Chapter0Gateway: React.FC = () => {
-  const groupRef = useRef<THREE.Group>(null);
   const ring1 = useRef<THREE.Mesh>(null);
   const ring2 = useRef<THREE.Mesh>(null);
   const reelRef = useRef<THREE.Group>(null);
@@ -214,65 +153,63 @@ const Chapter0Gateway: React.FC = () => {
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    if (ring1.current) ring1.current.rotation.z = t * 0.22;
-    if (ring2.current) ring2.current.rotation.z = -t * 0.16;
-    if (reelRef.current) {
-      reelRef.current.rotation.z = t * 0.45;
-      reelRef.current.position.y = Math.sin(t * 1.1) * 0.15;
-    }
+    if (ring1.current) ring1.current.rotation.z = t * 0.2;
+    if (ring2.current) ring2.current.rotation.z = -t * 0.15;
+    if (reelRef.current) reelRef.current.rotation.z = t * 0.4;
     if (fluteRef.current) {
-      fluteRef.current.rotation.y = t * 0.5;
-      fluteRef.current.rotation.z = Math.sin(t * 0.8) * 0.15;
+      fluteRef.current.rotation.y = t * 0.4;
+      fluteRef.current.position.y = Math.sin(t * 1.2) * 0.08;
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, -6]}>
-      {/* Concentric Cartier Luxury Rings */}
+    <group position={[0, 0, 0]}>
+      {/* Outer Cartier Gold Ring */}
       <mesh ref={ring1}>
-        <torusGeometry args={[3.8, 0.045, 16, 100]} />
-        <meshStandardMaterial color="#d4af37" emissive="#66491a" metalness={0.9} roughness={0.2} />
+        <torusGeometry args={[3.4, 0.04, 16, 100]} />
+        <meshStandardMaterial color="#d4af37" emissive="#4d3b14" metalness={0.9} roughness={0.2} />
       </mesh>
+
+      {/* Middle Crimson Ring */}
       <mesh ref={ring2}>
-        <torusGeometry args={[4.6, 0.035, 16, 100]} />
+        <torusGeometry args={[4.4, 0.03, 16, 100]} />
         <meshStandardMaterial color="#ff2222" emissive="#550512" metalness={0.8} roughness={0.3} />
       </mesh>
 
-      {/* Orbiting Golden Film Reel (Represents STUDIO) */}
-      <group ref={reelRef} position={[0, 0.2, 0]}>
+      {/* Centerpiece: Orbiting Golden Film Reel (STUDIO) */}
+      <group ref={reelRef} position={[0, 0, 0]}>
         <mesh>
-          <torusGeometry args={[1.6, 0.06, 16, 64]} />
+          <torusGeometry args={[1.5, 0.05, 16, 64]} />
           <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
         </mesh>
         {[0, 60, 120, 180, 240, 300].map((deg) => (
           <mesh key={deg} rotation={[0, 0, (deg * Math.PI) / 180]}>
-            <cylinderGeometry args={[0.025, 0.025, 3.2, 8]} />
+            <cylinderGeometry args={[0.02, 0.02, 3.0, 8]} />
             <meshStandardMaterial color="#ff2222" metalness={0.8} roughness={0.2} />
           </mesh>
         ))}
       </group>
 
-      {/* Dimensional 3D Sacred Red Flute (Emotional Core) */}
-      <group ref={fluteRef} position={[0, -0.6, 0.5]}>
+      {/* Glowing Sacred Red Flute floating inside */}
+      <group ref={fluteRef} position={[0, 0, 0.2]}>
         <mesh rotation={[0, 0, Math.PI / 4]}>
-          <cylinderGeometry args={[0.05, 0.05, 2.6, 24]} />
+          <cylinderGeometry args={[0.045, 0.045, 2.4, 24]} />
           <meshStandardMaterial
             color="#ff2222"
             emissive="#ff1e46"
-            emissiveIntensity={2.0}
-            roughness={0.15}
+            emissiveIntensity={1.8}
+            roughness={0.2}
             metalness={0.4}
           />
         </mesh>
-        {/* Gold flute rings */}
-        {[-0.8, -0.4, 0, 0.4, 0.8].map((offset, i) => (
+        {[-0.6, -0.2, 0.2, 0.6].map((offset, i) => (
           <mesh
             key={i}
             position={[offset * Math.cos(Math.PI / 4), offset * Math.sin(Math.PI / 4), 0]}
             rotation={[0, 0, Math.PI / 4]}
           >
-            <torusGeometry args={[0.06, 0.015, 8, 24]} />
-            <meshStandardMaterial color="#ffd166" metalness={0.9} roughness={0.1} />
+            <torusGeometry args={[0.055, 0.012, 8, 24]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.1} />
           </mesh>
         ))}
       </group>
@@ -281,7 +218,7 @@ const Chapter0Gateway: React.FC = () => {
 };
 
 /**
- * 6. Chapter 1: The Core Pillars 3D Constellation
+ * 5. Chapter 1: The Core Pillars 3D Constellation
  */
 const Chapter1Pillars: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
@@ -293,10 +230,10 @@ const Chapter1Pillars: React.FC = () => {
   });
 
   const positions: [number, number, number][] = [
-    [-4.8, 2.6, 0],   // 01 Branding & Identity
-    [4.8, 2.6, 0],    // 02 Film & Animation
-    [-4.8, -2.6, 0],  // 03 Creative Education
-    [4.8, -2.6, 0],   // 04 Strategic Storytelling
+    [-4.5, 2.4, 0],   // 01 Branding
+    [4.5, 2.4, 0],    // 02 Film
+    [-4.5, -2.4, 0],  // 03 Animation
+    [4.5, -2.4, 0],   // 04 Education
   ];
 
   return (
@@ -305,22 +242,17 @@ const Chapter1Pillars: React.FC = () => {
         {positions.map((pos, idx) => (
           <group key={idx} position={pos}>
             <mesh>
-              <octahedronGeometry args={[1.3, 0]} />
+              <octahedronGeometry args={[1.2, 0]} />
               <meshStandardMaterial
                 color={idx % 2 === 0 ? '#ff2222' : '#e0a96d'}
                 wireframe
                 emissive={idx % 2 === 0 ? '#ff1e46' : '#996622'}
-                emissiveIntensity={0.7}
+                emissiveIntensity={0.65}
               />
             </mesh>
             <mesh>
-              <sphereGeometry args={[0.35, 16, 16]} />
+              <sphereGeometry args={[0.3, 16, 16]} />
               <meshBasicMaterial color="#ffffff" />
-            </mesh>
-            {/* Orbiting micro ring */}
-            <mesh rotation={[Math.PI / 3, 0, 0]}>
-              <torusGeometry args={[1.9, 0.02, 12, 36]} />
-              <meshBasicMaterial color="#d4af37" transparent opacity={0.4} />
             </mesh>
           </group>
         ))}
@@ -330,37 +262,62 @@ const Chapter1Pillars: React.FC = () => {
 };
 
 /**
- * 7. Chapter 2: The Logo Genesis & Sacred Thread Nexus
+ * 6. Chapter 2: The Sacred Thread Nexus (Torus Knot)
  */
 const Chapter2Nexus: React.FC = () => {
   const knotRef = useRef<THREE.Mesh>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
-    const t = state.clock.getElapsedTime();
     if (knotRef.current) {
-      knotRef.current.rotation.x = t * 0.35;
-      knotRef.current.rotation.y = t * 0.25;
-    }
-    if (ringRef.current) {
-      ringRef.current.rotation.z = -t * 0.15;
+      knotRef.current.rotation.x = state.clock.getElapsedTime() * 0.3;
+      knotRef.current.rotation.y = state.clock.getElapsedTime() * 0.2;
     }
   });
 
   return (
     <group position={[0, 0, -CHAPTER_SPACING * 2]}>
       <mesh ref={knotRef}>
-        <torusKnotGeometry args={[2.8, 0.1, 140, 32, 2, 3]} />
+        <torusKnotGeometry args={[2.6, 0.09, 130, 32, 2, 3]} />
         <meshStandardMaterial
           color="#ff2222"
           emissive="#ff1e46"
-          emissiveIntensity={1.4}
+          emissiveIntensity={1.3}
           roughness={0.25}
           metalness={0.7}
         />
       </mesh>
-      <mesh ref={ringRef}>
-        <torusGeometry args={[4.2, 0.03, 16, 80]} />
+    </group>
+  );
+};
+
+/**
+ * 7. Chapter 3: The Atelier Savoir-Faire Crystals
+ */
+const Chapter3Atelier: React.FC = () => {
+  const crystalRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (crystalRef.current) {
+      crystalRef.current.rotation.y = state.clock.getElapsedTime() * 0.4;
+      crystalRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.8) * 0.3;
+    }
+  });
+
+  return (
+    <group position={[0, 0, -CHAPTER_SPACING * 3]}>
+      <mesh ref={crystalRef}>
+        <dodecahedronGeometry args={[2.3, 0]} />
+        <meshStandardMaterial
+          color="#ff2222"
+          emissive="#ff1e46"
+          emissiveIntensity={0.8}
+          roughness={0.1}
+          metalness={0.8}
+          wireframe
+        />
+      </mesh>
+      <mesh>
+        <torusGeometry args={[4.0, 0.03, 16, 80]} />
         <meshStandardMaterial color="#e0a96d" metalness={0.9} roughness={0.2} />
       </mesh>
     </group>
@@ -368,58 +325,13 @@ const Chapter2Nexus: React.FC = () => {
 };
 
 /**
- * 8. Chapter 3: The Atelier Savoir-Faire Crystals
+ * 8. Floating Textured 3D Collateral Frame in Chapter 4
  */
-const Chapter3Atelier: React.FC = () => {
-  const crystalRef = useRef<THREE.Mesh>(null);
-  const innerRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (crystalRef.current) {
-      crystalRef.current.rotation.y = t * 0.4;
-      crystalRef.current.rotation.x = Math.sin(t * 0.8) * 0.3;
-    }
-    if (innerRef.current) {
-      innerRef.current.rotation.y = -t * 0.6;
-    }
-  });
-
-  return (
-    <group position={[0, 0, -CHAPTER_SPACING * 3]}>
-      <mesh ref={crystalRef}>
-        <dodecahedronGeometry args={[2.4, 0]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff1e46"
-          emissiveIntensity={0.9}
-          roughness={0.1}
-          metalness={0.8}
-          wireframe
-        />
-      </mesh>
-      <mesh ref={innerRef}>
-        <octahedronGeometry args={[1.2, 0]} />
-        <meshStandardMaterial color="#e0a96d" metalness={0.95} roughness={0.1} />
-      </mesh>
-      <mesh>
-        <torusGeometry args={[4.2, 0.035, 16, 90]} />
-        <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.1} />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * 9. Floating Textured 3D Collateral Frame
- * Renders real high-res mockups extracted from the Holy Grail guide in 3D space!
- */
-const FloatingBrandCard3D: React.FC<{
+const FloatingCollateralFrame3D: React.FC<{
   imageUrl: string;
   pos: [number, number, number];
   rotY: number;
-  scale?: number;
-}> = ({ imageUrl, pos, rotY, scale = 1 }) => {
+}> = ({ imageUrl, pos, rotY }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const groupRef = useRef<THREE.Group>(null);
 
@@ -433,12 +345,13 @@ const FloatingBrandCard3D: React.FC<{
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.position.y = pos[1] + Math.sin(state.clock.getElapsedTime() * 0.9 + pos[0]) * 0.18;
+      groupRef.current.position.y =
+        pos[1] + Math.sin(state.clock.getElapsedTime() * 0.8 + pos[0]) * 0.12;
     }
   });
 
   return (
-    <group ref={groupRef} position={pos} rotation={[0, rotY, 0]} scale={scale}>
+    <group ref={groupRef} position={pos} rotation={[0, rotY, 0]}>
       {/* Beveled Gold Outer Frame */}
       <mesh>
         <boxGeometry args={[3.2, 2.1, 0.08]} />
@@ -458,54 +371,26 @@ const FloatingBrandCard3D: React.FC<{
           <meshStandardMaterial color="#222228" wireframe />
         )}
       </mesh>
-      {/* Glowing bottom accent line */}
-      <mesh position={[0, -1.0, 0.08]}>
-        <boxGeometry args={[2.8, 0.025, 0.02]} />
-        <meshBasicMaterial color="#ff2222" />
-      </mesh>
     </group>
   );
 };
 
 /**
- * 10. Chapter 4: Selected Commissions 3D Gallery Pedestals
- * Floating 3D gallery featuring the authentic Holy Grail photography:
- * Visiting cards mockup, Executive Letterhead mockup, Screenplay envelopes, and Urban Billboard.
+ * 9. Chapter 4: Selected Commissions Gallery in 3D
  */
 const Chapter4Gallery: React.FC = () => {
   return (
     <group position={[0, 0, -CHAPTER_SPACING * 4]}>
-      {/* 3D Floating Collateral Frames with real textures */}
-      <FloatingBrandCard3D
-        imageUrl="/brand/p57_0.jpg"
-        pos={[-4.5, 1.6, 0.5]}
-        rotY={0.22}
-        scale={1.1}
-      />
-      <FloatingBrandCard3D
-        imageUrl="/brand/p59_0.jpg"
-        pos={[4.5, 1.6, 0.5]}
-        rotY={-0.22}
-        scale={1.1}
-      />
-      <FloatingBrandCard3D
-        imageUrl="/brand/p61_0.png"
-        pos={[-4.6, -2.4, -1]}
-        rotY={0.18}
-        scale={1.05}
-      />
-      <FloatingBrandCard3D
-        imageUrl="/brand/p45_1.png"
-        pos={[4.6, -2.4, -1]}
-        rotY={-0.18}
-        scale={1.05}
-      />
+      <FloatingCollateralFrame3D imageUrl="/brand/p57_0.jpg" pos={[-4.5, 1.6, 0]} rotY={0.2} />
+      <FloatingCollateralFrame3D imageUrl="/brand/p59_0.jpg" pos={[4.5, 1.6, 0]} rotY={-0.2} />
+      <FloatingCollateralFrame3D imageUrl="/brand/p61_0.png" pos={[-4.5, -2.2, -1]} rotY={0.16} />
+      <FloatingCollateralFrame3D imageUrl="/brand/p45_1.png" pos={[4.5, -2.2, -1]} rotY={-0.16} />
     </group>
   );
 };
 
 /**
- * 11. Chapter 5: Living Social Archive Constellation
+ * 10. Chapter 5: Living Archive Constellation
  */
 const Chapter5Archive: React.FC = () => {
   const ringRef = useRef<THREE.Group>(null);
@@ -522,30 +407,30 @@ const Chapter5Archive: React.FC = () => {
         {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
           const rad = (deg * Math.PI) / 180;
           return (
-            <mesh key={deg} position={[Math.cos(rad) * 5.2, Math.sin(rad) * 5.2, 0]}>
-              <octahedronGeometry args={[0.45, 0]} />
-              <meshStandardMaterial color="#ff2222" emissive="#ff1e46" emissiveIntensity={0.8} />
+            <mesh key={deg} position={[Math.cos(rad) * 4.8, Math.sin(rad) * 4.8, 0]}>
+              <octahedronGeometry args={[0.4, 0]} />
+              <meshStandardMaterial color="#ff2222" emissive="#ff1e46" emissiveIntensity={0.6} />
             </mesh>
           );
         })}
       </group>
       <mesh>
-        <torusGeometry args={[5.2, 0.025, 16, 120]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.25} />
+        <torusGeometry args={[4.8, 0.02, 16, 120]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.2} />
       </mesh>
     </group>
   );
 };
 
 /**
- * 12. Chapter 6: The Commission Geodesic Cocoon
+ * 11. Chapter 6: The Commission Geodesic Cocoon
  */
 const Chapter6Commission: React.FC = () => {
   const domeRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     if (domeRef.current) {
-      domeRef.current.rotation.y = state.clock.getElapsedTime() * 0.12;
+      domeRef.current.rotation.y = state.clock.getElapsedTime() * 0.1;
       domeRef.current.rotation.z = Math.sin(state.clock.getElapsedTime() * 0.3) * 0.1;
     }
   });
@@ -553,12 +438,12 @@ const Chapter6Commission: React.FC = () => {
   return (
     <group position={[0, 0, -CHAPTER_SPACING * 6]}>
       <mesh ref={domeRef}>
-        <sphereGeometry args={[5.6, 20, 20]} />
+        <sphereGeometry args={[5.2, 18, 18]} />
         <meshStandardMaterial
           color="#ff2222"
-          emissive="#44040e"
+          emissive="#550512"
           wireframe
-          roughness={0.3}
+          roughness={0.4}
           metalness={0.8}
         />
       </mesh>
@@ -567,32 +452,32 @@ const Chapter6Commission: React.FC = () => {
 };
 
 /**
- * 13. Chapter 7: The Maison Grand Portal
+ * 12. Chapter 7: The Maison Grand Portal
  */
 const Chapter7Maison: React.FC = () => {
   const ringRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     if (ringRef.current) {
-      ringRef.current.rotation.z = state.clock.getElapsedTime() * 0.18;
+      ringRef.current.rotation.z = state.clock.getElapsedTime() * 0.2;
     }
   });
 
   return (
     <group position={[0, 0, -CHAPTER_SPACING * 7]}>
       <mesh ref={ringRef}>
-        <torusGeometry args={[5.4, 0.09, 16, 120]} />
+        <torusGeometry args={[5.0, 0.08, 16, 120]} />
         <meshStandardMaterial
           color="#d4af37"
           emissive="#e0a96d"
-          emissiveIntensity={0.65}
+          emissiveIntensity={0.6}
           metalness={0.9}
           roughness={0.1}
         />
       </mesh>
       <mesh>
-        <ringGeometry args={[0.01, 5.2, 64]} />
-        <meshBasicMaterial color="#ff2222" transparent opacity={0.08} side={THREE.DoubleSide} />
+        <ringGeometry args={[0.01, 4.8, 64]} />
+        <meshBasicMaterial color="#ff2222" transparent opacity={0.06} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -606,18 +491,17 @@ export const InwardWorld: React.FC = () => {
     <>
       <InwardCamera />
       <ambientLight intensity={0.45} />
-      <directionalLight position={[10, 18, 12]} intensity={1.4} color="#ffffff" />
-      <pointLight position={[0, 0, 8]} intensity={2.8} color="#ffd166" distance={35} />
-      <pointLight position={[0, 0, -50]} intensity={2.5} color="#ffffff" distance={60} />
+      <directionalLight position={[10, 16, 12]} intensity={1.3} color="#ffffff" />
+      <pointLight position={[0, 0, 8]} intensity={2.8} color="#e0a96d" distance={35} />
+      <pointLight position={[0, 0, -60]} intensity={2.5} color="#ffffff" distance={65} />
       <pointLight position={[0, 0, -112]} intensity={3.0} color="#e0a96d" distance={70} />
-      <pointLight position={[0, 0, -180]} intensity={4.0} color="#ff2222" distance={90} />
+      <pointLight position={[0, 0, -180]} intensity={3.5} color="#ff2222" distance={90} />
 
-      {/* Atmospheric Spatial Fog */}
-      <fog attach="fog" args={['#070709', 10, 95]} />
+      {/* Atmospheric Fog */}
+      <fog attach="fog" args={['#060608', 8, 85]} />
 
       {/* Spatial 3D Elements */}
       <DeepTunnelParticles />
-      <ArchitecturalTunnelPortals />
       <SacredSplineTube />
       <Chapter0Gateway />
       <Chapter1Pillars />

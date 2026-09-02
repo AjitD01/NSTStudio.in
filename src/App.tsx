@@ -29,8 +29,6 @@ export const App: React.FC = () => {
     setIsDossierOpen(true);
   };
 
-  const currentChapter = Math.min(Math.max(Math.round(progress), 0), TOTAL_CHAPTERS - 1);
-
   return (
     <main className="nst-app-container">
       {/* 1. Global Luxury Progress Ribbon */}
@@ -79,8 +77,7 @@ export const App: React.FC = () => {
 
       {/* 4. Foreground Chapter Narrative Overlay */}
       <ChapterOverlay
-        currentChapter={currentChapter}
-        onNavigateChapter={handleDotClick}
+        progress={progress}
         onOpenDossier={handleOpenDossier}
       />
 
