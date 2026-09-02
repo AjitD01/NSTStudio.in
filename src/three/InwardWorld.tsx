@@ -276,11 +276,23 @@ const RealisticCentralFlute: React.FC = () => {
   );
 };
 
+// Bespoke screen-space layout anchor [rightOffset, upOffset] for each chapter
+const CHAPTER_SCREEN_LAYOUTS: [number, number][] = [
+  [2.15, -0.15],   // 0. Prologue: Right side
+  [-2.2, 0.25],    // 1. Four Universes: Left side
+  [2.35, -0.35],   // 2. Sacred Mark: Right lower
+  [-2.1, 0.45],    // 3. Atelier: Left upper
+  [1.85, -2.2],    // 4. Selected Works (Tactile Collaterals): Shifted towards right, same lower level
+  [2.15, 0.3],     // 5. Living Archive: Right upper
+  [-2.3, -0.1],    // 6. Private Commission: Left center
+  [2.1, 0.0],      // 7. Maison Epilogue: Right center
+];
+
 /**
  * 3. Interactive Character Guide 3D
  * - Direct physical touch & click responses right on the canvas.
- * - Magnetic 3D head/body tracking towards cursor pointer.
- * - Dynamic hover scale-up (1.12x) and luminous aura intensification.
+ * - Organic, randomised gaze shifts (glances at flute, cosmos, and viewer).
+ * - Dynamic chapter-specific screen positioning and living organic drift.
  * - Click/Tap physical spring hop + pirouette spin + expanding golden stardust ripple ring.
  * - Zero popups, zero extra windows; 100% integrated WebGL interactivity!
  */
@@ -301,7 +313,12 @@ const InteractiveCharacterGuide: React.FC = () => {
   const bounceVelRef = useRef(0);
   const spinAngleRef = useRef(0);
   const spinVelRef = useRef(0);
-  const rippleProgressRef = useRef(1.0); // 1.0 = inactive, 0.0 = just clicked
+  const rippleProgressRef = useRef(1.0);
+
+  // Randomised Organic Gaze State
+  const gazeTimerRef = useRef(0);
+  const gazeTargetRef = useRef({ x: 0, y: 0 });
+  const currentGazeRef = useRef({ x: 0, y: 0 });
 
   // Load all 8 transparent character pose assets
   useEffect(() => {
@@ -346,27 +363,68 @@ const InteractiveCharacterGuide: React.FC = () => {
     const targetScale = isHoveredRef.current ? 1.12 : 1.0;
     hoverScaleRef.current = THREE.MathUtils.lerp(hoverScaleRef.current, targetScale, 0.14);
 
-    // 4. Billboard & Position Guide in Camera Space
+    // 4. Randomised Living Gaze Timer & Target
+    gazeTimerRef.current += dt;
+    if (gazeTimerRef.current > 2.6 + Math.sin(time * 0.7) * 1.2) {
+      gazeTimerRef.current = 0;
+      // Randomised gaze point: curious glance around 3D space
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 0.08 + Math.random() * 0.32;
+      gazeTargetRef.current = {
+        x: Math.cos(angle) * dist + pointer.x * 0.15,
+        y: Math.sin(angle) * dist * 0.6 - pointer.y * 0.12,
+      };
+    }
+
+    // Smooth saccadic gaze interpolation
+    const gazeSpeed = isHoveredRef.current ? 0.12 : 0.035;
+    currentGazeRef.current.x = THREE.MathUtils.lerp(
+      currentGazeRef.current.x,
+      isHoveredRef.current ? pointer.x * 0.35 : gazeTargetRef.current.x,
+      gazeSpeed
+    );
+    currentGazeRef.current.y = THREE.MathUtils.lerp(
+      currentGazeRef.current.y,
+      isHoveredRef.current ? -pointer.y * 0.2 : gazeTargetRef.current.y,
+      gazeSpeed
+    );
+
+    // 5. Dynamic Chapter-Specific Position Interpolation & Living Drift
+    const clampedProgress = Math.max(0, Math.min(TOTAL_CHAPTERS - 1, progress));
+    const baseIdx = Math.floor(clampedProgress);
+    const nextIdx = Math.min(TOTAL_CHAPTERS - 1, baseIdx + 1);
+    const frac = clampedProgress - baseIdx;
+    const t = frac * frac * (3 - 2 * frac);
+
+    const layoutA = CHAPTER_SCREEN_LAYOUTS[baseIdx] || [2.15, -0.15];
+    const layoutB = CHAPTER_SCREEN_LAYOUTS[nextIdx] || [2.15, -0.15];
+    const targetRight = THREE.MathUtils.lerp(layoutA[0], layoutB[0], t);
+    const targetUp = THREE.MathUtils.lerp(layoutA[1], layoutB[1], t);
+
+    // Multi-frequency organic wandering drift
+    const organicDriftX = Math.sin(time * 0.47) * 0.22 + Math.cos(time * 0.31) * 0.12;
+    const organicDriftY = Math.cos(time * 0.53) * 0.15 + Math.sin(time * 0.39) * 0.1;
+
+    // 6. Billboard & Position Guide in Camera Space
     if (groupRef.current) {
       groupRef.current.quaternion.copy(camera.quaternion);
 
       const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
 
-      // Base floating hover + click spring bounce + cursor parallax
       const baseHover = Math.sin(time * (isHoveredRef.current ? 2.4 : 1.2)) * (isHoveredRef.current ? 0.12 : 0.07);
-      const totalY = -0.15 + baseHover + bounceYRef.current + pointer.y * 0.15;
+      const totalY = targetUp + organicDriftY + baseHover + bounceYRef.current + pointer.y * 0.12;
+      const totalX = targetRight + organicDriftX + pointer.x * 0.2;
 
       const targetPos = cameraRight
         .clone()
-        .multiplyScalar(2.15)
+        .multiplyScalar(totalX)
         .add(cameraUp.clone().multiplyScalar(totalY));
-      targetPos.x += pointer.x * 0.25;
 
       groupRef.current.position.copy(targetPos);
     }
 
-    // 5. Direct 3D Tilt & Spin on Character Mesh
+    // 7. Direct 3D Tilt & Spin on Character Mesh
     if (characterMeshGroupRef.current) {
       characterMeshGroupRef.current.scale.set(
         hoverScaleRef.current,
@@ -374,13 +432,13 @@ const InteractiveCharacterGuide: React.FC = () => {
         hoverScaleRef.current
       );
 
-      // Leans towards user's cursor + pirouette spin
-      characterMeshGroupRef.current.rotation.y = pointer.x * 0.35 + spinAngleRef.current;
-      characterMeshGroupRef.current.rotation.x = -pointer.y * 0.2;
-      characterMeshGroupRef.current.rotation.z = -pointer.x * 0.08;
+      // Randomised gaze + pirouette spin
+      characterMeshGroupRef.current.rotation.y = currentGazeRef.current.x + spinAngleRef.current;
+      characterMeshGroupRef.current.rotation.x = currentGazeRef.current.y;
+      characterMeshGroupRef.current.rotation.z = -currentGazeRef.current.x * 0.18;
     }
 
-    // 6. Interactive Ground Aura
+    // 8. Interactive Ground Aura
     if (auraRef.current) {
       const auraSpeed = isHoveredRef.current ? 3.5 : 1.8;
       const basePulse = 1.0 + Math.sin(time * auraSpeed) * (isHoveredRef.current ? 0.25 : 0.12);
@@ -392,7 +450,7 @@ const InteractiveCharacterGuide: React.FC = () => {
       }
     }
 
-    // 7. Expanding 3D Stardust Spark Ripple Ring on Click
+    // 9. Expanding 3D Stardust Spark Ripple Ring on Click
     if (sparkRippleRef.current && rippleProgressRef.current < 1.0) {
       rippleProgressRef.current += dt * 2.2;
       const t = Math.min(1.0, rippleProgressRef.current);
@@ -405,7 +463,7 @@ const InteractiveCharacterGuide: React.FC = () => {
       sparkRippleRef.current.visible = t < 1.0;
     }
 
-    // 8. Dynamic crossfade between character poses based on scroll progress
+    // 10. Dynamic crossfade between character poses based on scroll progress
     meshRefs.current.forEach((mesh, idx) => {
       if (mesh) {
         const dist = Math.abs(progress - idx);
