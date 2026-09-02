@@ -1294,3 +1294,409 @@ html, body {
 
 .w-full { width: 100%; }
 .mt-4 { margin-top: 16px; }
+
+/* =========================================================================
+   MOBILE & TABLET RESPONSIVE SYSTEM
+   (Desktop / Laptop view remains 100% untouched)
+   ========================================================================= */
+@media (max-width: 768px) {
+  /* ----- Header on Mobile ----- */
+  .global-header {
+    height: 56px;
+    padding: 0 16px;
+    background: rgba(6, 6, 8, 0.95);
+    backdrop-filter: blur(12px);
+  }
+
+  .brand-logo {
+    font-size: 16px;
+    letter-spacing: 0.15em;
+  }
+
+  .brand-sub {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .header-link {
+    display: none;
+  }
+
+  .header-btn-dossier {
+    font-size: 8.5px;
+    padding: 5px 10px;
+    letter-spacing: 0.15em;
+  }
+
+  .btn-commission-cta {
+    font-size: 8.5px;
+    padding: 5px 10px;
+    letter-spacing: 0.15em;
+  }
+
+  /* ----- Cartier Navigation Dots on Mobile ----- */
+  .section-indicator {
+    right: 8px;
+    gap: 8px;
+  }
+
+  .cartier-nav-dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dot-center {
+    width: 3px;
+    height: 3px;
+  }
+
+  .cartier-ring {
+    width: 12px;
+    height: 12px;
+  }
+
+  .dot-tooltip {
+    display: none !important;
+  }
+
+  /* ----- Chapter Slides on Mobile ----- */
+  .chapter-slide {
+    padding: 64px 22px 36px 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .chapter-center-content {
+    margin: auto 0;
+    padding-top: 8px;
+    padding-bottom: 24px;
+    max-width: 100%;
+  }
+
+  .section-eyebrow {
+    font-size: 8.5px;
+    letter-spacing: 0.35em;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-size: clamp(22px, 6.5vw, 28px);
+    margin-bottom: 6px;
+  }
+
+  .section-desc {
+    font-size: 11.5px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    padding: 0 4px;
+  }
+
+  /* ----- Chapter 0: Prologue on Mobile ----- */
+  .prologue-emblem {
+    margin-bottom: 10px;
+  }
+
+  .prologue-kicker {
+    font-size: 8.5px;
+    letter-spacing: 0.35em;
+    margin-bottom: 6px;
+  }
+
+  .prologue-monogram-ring {
+    width: 44px;
+    height: 44px;
+  }
+
+  .monogram-text {
+    font-size: 12px;
+  }
+
+  .chapter-hero-title {
+    font-size: clamp(30px, 9vw, 44px);
+    margin-bottom: 6px;
+  }
+
+  .chapter-hero-tagline {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    margin-bottom: 8px;
+  }
+
+  .chapter-hero-subtext {
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 290px;
+    margin-bottom: 20px;
+  }
+
+  .inward-scroll-cue {
+    gap: 4px;
+  }
+
+  .cue-label {
+    font-size: 8px;
+    letter-spacing: 0.3em;
+  }
+
+  .cue-line-inward {
+    height: 20px;
+  }
+
+  /* ----- Chapter 1: Four Universes on Mobile ----- */
+  .universes-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .universe-card {
+    padding: 12px 14px;
+  }
+
+  .universe-name {
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .universe-text {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  /* ----- Chapter 2: Sacred Thread on Mobile ----- */
+  .thread-manifesto-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .thread-card {
+    padding: 12px 14px;
+  }
+
+  .thread-card h4 {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .thread-card p {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /* ----- Chapter 3: Atelier on Mobile ----- */
+  .atelier-showcase {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .atelier-pillar {
+    padding: 14px 12px;
+  }
+
+  .atelier-pillar h4 {
+    font-size: 13.5px;
+    margin-bottom: 8px;
+  }
+
+  .mascot-thumb-preview img {
+    max-height: 65px;
+  }
+
+  /* ----- Chapter 4: Collaterals on Mobile ----- */
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .gallery-card {
+    padding: 8px;
+  }
+
+  .card-thumb-frame {
+    height: 70px;
+    margin-bottom: 6px;
+  }
+
+  .gallery-card h4 {
+    font-size: 11px;
+  }
+
+  .gallery-card p {
+    font-size: 9px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  /* ----- Chapter 5: Social Archive on Mobile ----- */
+  .social-pill-header {
+    font-size: 8px;
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .instagram-editorial-preview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .insta-hero-frame img {
+    height: 120px;
+  }
+
+  .frame-meta {
+    padding: 8px 10px;
+  }
+
+  .frame-title {
+    font-size: 10.5px;
+  }
+
+  /* ----- Chapter 6: Commission on Mobile ----- */
+  .commission-box {
+    padding: 16px 14px;
+    max-width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .studio-direct-coords {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 8px;
+  }
+
+  .studio-direct-coords span:nth-child(2),
+  .studio-direct-coords span:nth-child(4) {
+    display: none;
+  }
+
+  /* ----- Chapter 7: Epilogue on Mobile ----- */
+  .footer-monogram {
+    font-size: 42px;
+  }
+
+  .footer-lead {
+    font-size: 9px;
+    margin-bottom: 12px;
+  }
+
+  .epilogue-dossier-card {
+    padding: 14px 12px;
+    margin-bottom: 14px;
+  }
+
+  .epilogue-dossier-card p {
+    font-size: 11px;
+  }
+
+  /* ----- Brand Dossier Modal on Mobile ----- */
+  .dossier-modal-backdrop {
+    padding: 0;
+  }
+
+  .dossier-modal-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .dossier-header {
+    height: 50px;
+    padding: 0 12px;
+  }
+
+  .dossier-title {
+    font-size: 11.5px;
+  }
+
+  .dossier-subtitle {
+    display: none;
+  }
+
+  .dossier-controls {
+    gap: 8px;
+  }
+
+  .dossier-counter {
+    font-size: 9px;
+  }
+
+  .btn-dossier-close {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .dossier-stage {
+    padding: 6px 4px;
+  }
+
+  .btn-dossier-nav {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+
+  .dossier-image-render {
+    max-height: 44vh;
+  }
+
+  .dossier-filmstrip {
+    height: 60px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .filmstrip-thumb {
+    width: 64px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra refinement for narrow smartphone screens (<= 480px) */
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-thumb-frame {
+    height: 95px;
+  }
+
+  .chapter-slide {
+    padding: 58px 14px 28px 14px;
+  }
+
+  .chapter-hero-title {
+    font-size: clamp(28px, 8.5vw, 36px);
+  }
+}
+

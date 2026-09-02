@@ -12,7 +12,7 @@ const TOTAL_CHAPTERS = 8;
  * Keeps camera centered on the 3D sculptures without clipping or tilting out of view.
  */
 export const InwardCamera: React.FC = () => {
-  const { camera, pointer } = useThree();
+  const { camera, pointer, size } = useThree();
   const prevProgressRef = useRef(0);
 
   useFrame(() => {
@@ -20,10 +20,13 @@ export const InwardCamera: React.FC = () => {
     const delta = progress - prevProgressRef.current;
     prevProgressRef.current = progress;
 
-    // Target camera Z position: starts at Z=10 for Chapter 0 (sculpture at Z=0)
-    const targetZ = 10 - progress * CHAPTER_SPACING;
-    const targetX = pointer.x * 0.8;
-    const targetY = pointer.y * 0.6;
+    // Mobile viewport adaptation: pull camera back slightly in portrait mode
+    // Laptop/desktop (size.width >= size.height) remains 100% untouched at baseZ = 10
+    const isPortrait = size.width < size.height;
+    const baseZ = isPortrait ? 15.0 : 10;
+    const targetZ = baseZ - progress * CHAPTER_SPACING;
+    const targetX = pointer.x * (isPortrait ? 0.3 : 0.8);
+    const targetY = pointer.y * (isPortrait ? 0.3 : 0.6);
 
     // Smooth lerp camera position
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.09);

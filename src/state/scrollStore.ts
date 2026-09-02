@@ -53,13 +53,26 @@ export class ScrollManager {
 
     // Touch gestures for mobile/tablets
     let touchStartY = 0;
+    let touchStartX = 0;
+    let isTouchInteractive = false;
     const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('input, textarea, select, button, a, .dossier-modal-container, .filmstrip-thumb')) {
+        isTouchInteractive = true;
+        return;
+      }
+      isTouchInteractive = false;
       touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
     };
     const onTouchEnd = (e: TouchEvent) => {
+      if (isTouchInteractive) return;
       const touchEndY = e.changedTouches[0].clientY;
+      const touchEndX = e.changedTouches[0].clientX;
       const dy = touchStartY - touchEndY;
-      if (Math.abs(dy) > 35) {
+      const dx = touchStartX - touchEndX;
+      // Require clear vertical intent over 45px
+      if (Math.abs(dy) > 45 && Math.abs(dy) > Math.abs(dx) * 1.25) {
         if (dy > 0) {
           this.setTarget(Math.min(TOTAL_CHAPTERS - 1, Math.round(this.target) + 1));
         } else {
