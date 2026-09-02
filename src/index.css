@@ -1,312 +1,204 @@
-/* ============================================================
-   NST STUDIO — Immersive 3D Experience (Cartier Style)
-   Global CSS & Luxury Editorial Typography
-   ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
-
-/* ----- Reset & System Bounds ----- */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #050508;
-  color: #ffffff;
-  font-family: 'Satoshi', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --nst-black: #050508;
-  --nst-surface: rgba(14, 14, 20, 0.72);
-  --nst-surface-hover: rgba(22, 22, 32, 0.88);
-  --nst-border: rgba(255, 255, 255, 0.1);
-  --nst-border-accent: rgba(200, 16, 46, 0.45);
-  --nst-red: #c8102e;
+  --nst-black: #050507;
+  --nst-surface: rgba(12, 12, 16, 0.75);
+  --nst-surface-elevated: rgba(18, 18, 24, 0.85);
+  --nst-red: #c8102e; /* Cartier Crimson */
   --nst-red-glow: rgba(200, 16, 46, 0.35);
-  --nst-rose: #ff6b9d;
-  --nst-white: #ffffff;
-  --nst-silver: rgba(255, 255, 255, 0.65);
-  --nst-muted: rgba(255, 255, 255, 0.4);
+  --nst-rose: #ff4d6d;
+  --nst-gold: #d4af37;
+  --nst-white: #f8f8fa;
+  --nst-silver: #a0a0a8;
+  --nst-border: rgba(255, 255, 255, 0.08);
+  --nst-border-active: rgba(200, 16, 46, 0.4);
 
-  --font-display: 'Clash Display', sans-serif;
-  --font-body: 'Satoshi', sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Courier Prime', monospace;
 }
 
-/* ----- Canvas Viewport (Background 3D) ----- */
-canvas {
-  display: block;
-  position: absolute !important;
-  top: 0;
-  left: 0;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 0 !important;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Ensure Drei's scrollable container sits above the canvas */
-div[style*="overflow"] {
-  z-index: 2 !important;
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--nst-black);
+  color: var(--nst-white);
+  font-family: var(--font-body);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
 }
 
-.html-scroll-wrapper {
-  position: relative;
+/* ----- App Shell ----- */
+.nst-app-container {
+  position: fixed;
+  inset: 0;
   width: 100vw;
-  z-index: 10;
-  pointer-events: none;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--nst-black);
 }
-.overlay-navbar {
+
+/* ----- Top Progress Ribbon ----- */
+.top-progress-ribbon {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  z-index: 1000;
+  height: 2px;
+  background: linear-gradient(90deg, #d4af37, #c8102e, #ff4d6d);
+  z-index: 2000;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(200, 16, 46, 0.8);
+}
+
+/* ----- Global Header ----- */
+.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  padding: 0 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 48px;
-  pointer-events: none;
-}
-
-.overlay-navbar > * {
+  z-index: 1500;
   pointer-events: auto;
+  background: linear-gradient(180deg, rgba(5, 5, 7, 0.85) 0%, rgba(5, 5, 7, 0) 100%);
 }
 
-.navbar-brand {
+.brand-lockup {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  letter-spacing: 0.15em;
+  font-family: var(--font-display);
 }
 
-.navbar-logo {
-  font-family: var(--font-display);
-  font-size: 22px;
+.brand-logo {
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: -0.02em;
   color: var(--nst-white);
 }
 
-.navbar-separator {
+.brand-divider {
   color: var(--nst-red);
-  font-size: 14px;
-}
-
-.navbar-tagline {
-  font-family: var(--font-display);
-  font-size: 11px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--nst-silver);
   font-weight: 300;
+  font-size: 16px;
 }
 
-.navbar-links {
+.brand-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  color: var(--nst-silver);
+}
+
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
 }
 
-.navbar-link {
+.btn-sound-toggle {
+  background: none;
+  border: 1px solid var(--nst-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: var(--nst-silver);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-sound-toggle:hover,
+.btn-sound-toggle.active {
+  border-color: var(--nst-red);
+  color: var(--nst-white);
+  box-shadow: 0 0 8px var(--nst-red-glow);
+}
+
+.header-link {
+  font-family: var(--font-mono);
+  font-size: 10px;
   letter-spacing: 0.25em;
-  text-transform: uppercase;
   color: var(--nst-silver);
   text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.header-link:hover {
+  color: var(--nst-white);
+}
+
+.btn-commission-cta {
+  background: none;
+  border: 1px solid var(--nst-red);
+  border-radius: 2px;
+  color: var(--nst-white);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  padding: 8px 18px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.navbar-link:hover {
-  color: var(--nst-white);
+.btn-commission-cta:hover {
+  background: var(--nst-red);
+  box-shadow: 0 0 14px var(--nst-red-glow);
 }
 
-.navbar-contact {
-  padding: 8px 20px;
-  border: 1px solid var(--nst-border-accent);
-  background: rgba(200, 16, 46, 0.08);
-  border-radius: 2px;
+/* ----- Canvas Wrapper ----- */
+.canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-.navbar-contact:hover {
-  background: rgba(200, 16, 46, 0.2);
-  border-color: var(--nst-red);
-}
-
-/* ----- Scroll HTML Wrapper & Pages ----- */
-.html-scroll-wrapper {
-  position: relative;
-  width: 100vw;
+/* ----- Chapter Overlay Container ----- */
+.chapter-overlay-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
   pointer-events: none;
 }
 
-.scroll-page {
+.chapter-slide {
   position: absolute;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 90px 60px 40px;
-  box-sizing: border-box;
+  padding: 80px 48px;
 }
 
-.page-inner {
+.chapter-center-content {
   width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
+  max-width: 1100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-/* ----- 01. Hero Section Styling ----- */
-.hero-inner {
-  justify-content: center;
-  height: 100%;
-}
-
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.45em;
-  text-transform: uppercase;
-  color: var(--nst-silver);
-  margin-bottom: 24px;
-}
-
-.accent-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--nst-red);
-  box-shadow: 0 0 8px var(--nst-red);
-}
-
-.hero-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 0.88;
-  margin-bottom: 24px;
-}
-
-.hero-title-main {
-  font-family: var(--font-display);
-  font-size: clamp(64px, 12vw, 150px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  background: linear-gradient(180deg, #ffffff 15%, rgba(255, 255, 255, 0.45) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.hero-title-sub {
-  font-family: var(--font-display);
-  font-size: clamp(20px, 3.5vw, 42px);
-  font-weight: 300;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: var(--nst-silver);
-  margin-top: 8px;
-}
-
-.hero-divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 16px 0 24px;
-}
-
-.divider-line {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--nst-red), transparent);
-}
-
-.divider-diamond {
-  color: var(--nst-red);
-  font-size: 10px;
-}
-
-.hero-tagline {
-  font-family: var(--font-body);
-  font-size: clamp(14px, 1.3vw, 18px);
-  color: var(--nst-silver);
-  line-height: 1.65;
-  max-width: 520px;
-  margin-bottom: 28px;
-}
-
-.hero-disciplines {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--nst-muted);
-}
-
-.hero-disciplines .bullet {
-  color: var(--nst-red);
-}
-
-.hero-scroll-cue {
-  position: absolute;
-  bottom: 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.cue-text {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--nst-muted);
-}
-
-.cue-line {
-  width: 1px;
-  height: 36px;
-  background: linear-gradient(180deg, var(--nst-red), transparent);
-  animation: pulse-line 2s infinite ease-in-out;
-}
-
-@keyframes pulse-line {
-  0%, 100% { transform: scaleY(0.6); opacity: 0.3; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-
 /* ----- Standard Section Headers ----- */
-.section-header {
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .section-eyebrow {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -314,11 +206,12 @@ div[style*="overflow"] {
   text-transform: uppercase;
   color: var(--nst-red);
   margin-bottom: 8px;
+  display: block;
 }
 
 .section-title {
   font-family: var(--font-display);
-  font-size: clamp(26px, 3.2vw, 40px);
+  font-size: clamp(26px, 3.4vw, 42px);
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--nst-white);
@@ -327,13 +220,123 @@ div[style*="overflow"] {
 
 .section-desc {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--nst-silver);
-  max-width: 540px;
-  line-height: 1.5;
+  max-width: 560px;
+  line-height: 1.55;
+  margin-bottom: 24px;
 }
 
-/* ----- 02. Four Universes Grid ----- */
+/* ----- Chapter 0: Prologue Styles ----- */
+.prologue-emblem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.prologue-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  color: var(--nst-red);
+  margin-bottom: 12px;
+}
+
+.prologue-monogram-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.15);
+}
+
+.monogram-text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--nst-gold);
+}
+
+.chapter-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 76px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+
+.chapter-hero-tagline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--nst-silver);
+  margin-bottom: 14px;
+}
+
+.chapter-hero-subtext {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.3vw, 17px);
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 580px;
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+.inward-scroll-cue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.2s ease;
+}
+
+.inward-scroll-cue:hover {
+  transform: translateY(3px);
+}
+
+.cue-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cue-line-inward {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.cue-dot-pulse {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 3px;
+  height: 8px;
+  background: var(--nst-red);
+  box-shadow: 0 0 6px var(--nst-red);
+  animation: pulseDown 1.8s infinite cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes pulseDown {
+  0% { transform: translateY(-8px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(28px); opacity: 0; }
+}
+
+/* ----- Chapter 1: Universes Grid ----- */
 .universes-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -344,189 +347,159 @@ div[style*="overflow"] {
 .universe-card {
   background: var(--nst-surface);
   border: 1px solid var(--nst-border);
-  backdrop-filter: blur(16px);
   border-radius: 4px;
-  padding: 24px 20px;
+  padding: 22px 18px;
   text-align: left;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-}
-
-.universe-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--nst-red);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .universe-card:hover {
-  background: var(--nst-surface-hover);
-  border-color: var(--nst-border-accent);
-  transform: translateY(-6px);
-  box-shadow: 0 20px 48px rgba(200, 16, 46, 0.15);
-}
-
-.universe-card:hover::before {
-  transform: scaleX(1);
+  border-color: var(--nst-border-active);
+  transform: translateY(-4px);
 }
 
 .card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.card-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--nst-muted);
-}
-
-.card-glyph {
-  color: var(--nst-red);
-  font-size: 18px;
-}
-
-.card-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
   margin-bottom: 12px;
-  color: var(--nst-white);
-  letter-spacing: 0.04em;
 }
 
-.card-desc {
-  font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--nst-silver);
-  margin-bottom: 24px;
-  flex-grow: 1;
-}
-
-.card-badge {
+.universe-num {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--nst-muted);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 14px;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--nst-red);
 }
 
-/* ----- 03. The Sacred Thread Section ----- */
-.thread-manifesto-container {
+.universe-glyph {
+  font-size: 13px;
+  color: var(--nst-red);
+}
+
+.universe-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--nst-white);
+}
+
+.universe-text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--nst-silver);
+  margin-bottom: 14px;
+  flex: 1;
+}
+
+.card-footer-meta {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--nst-border);
+  padding-top: 8px;
+}
+
+/* ----- Chapter 2: The Sacred Thread Grid ----- */
+.thread-manifesto-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 16px;
   width: 100%;
 }
 
-.thread-beat {
+.manifesto-card {
   background: var(--nst-surface);
+  border: 1px solid var(--nst-border);
   border-left: 2px solid var(--nst-red);
-  padding: 24px 20px;
+  border-radius: 4px;
+  padding: 20px 16px;
   text-align: left;
-  border-radius: 0 4px 4px 0;
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--nst-border);
-  border-bottom: 1px solid var(--nst-border);
-  border-right: 1px solid var(--nst-border);
 }
 
-.beat-index {
+.manifesto-kicker {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--nst-red);
-  letter-spacing: 0.3em;
-  display: block;
   margin-bottom: 8px;
+  display: block;
 }
 
-.beat-title {
+.manifesto-card h4 {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 10px;
-  color: var(--nst-white);
+  margin-bottom: 6px;
 }
 
-.beat-text {
+.manifesto-card p {
   font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 11.5px;
+  line-height: 1.5;
   color: var(--nst-silver);
 }
 
-/* ----- 04. Atelier Showcase ----- */
+/* ----- Chapter 3: Atelier Showcase ----- */
 .atelier-showcase {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 18px;
   width: 100%;
 }
 
-.type-specimen-card {
+.atelier-card {
   background: var(--nst-surface);
   border: 1px solid var(--nst-border);
   border-radius: 4px;
-  padding: 36px 28px;
+  padding: 24px 20px;
   text-align: left;
-  backdrop-filter: blur(16px);
-  transition: all 0.3s ease;
 }
 
-.type-specimen-card:hover {
-  border-color: var(--nst-border-accent);
-  background: var(--nst-surface-hover);
-}
-
-.specimen-tag {
+.card-meta {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--nst-muted);
-  margin-bottom: 16px;
+  font-size: 9.5px;
+  letter-spacing: 0.3em;
+  color: var(--nst-silver);
+  margin-bottom: 10px;
+  display: block;
 }
 
-.specimen-display {
-  font-size: 26px;
+.font-sample-satoshi {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.font-sample-courier {
+  font-family: var(--font-mono);
+  font-size: 19px;
   font-weight: 700;
-  color: var(--nst-white);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
-.font-satoshi { font-family: 'Satoshi', sans-serif; }
-.font-courier { font-family: 'Courier Prime', monospace; }
-.font-clash { font-family: 'Clash Display', sans-serif; }
-
-.rose-hot-text {
-  background: linear-gradient(135deg, #c8102e, #ff6b9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.color-name-rose {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--nst-rose);
+  margin-bottom: 8px;
 }
 
 .specimen-desc {
   font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
   color: var(--nst-silver);
+  line-height: 1.5;
 }
 
-/* ----- 05. Gallery Grid ----- */
+/* ----- Chapter 4: Gallery Grid ----- */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -537,86 +510,88 @@ div[style*="overflow"] {
 .gallery-card {
   background: var(--nst-surface);
   border: 1px solid var(--nst-border);
-  padding: 18px 16px;
+  padding: 16px 16px;
   border-radius: 4px;
   text-align: left;
-  backdrop-filter: blur(14px);
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .gallery-card:hover {
   border-color: var(--nst-red);
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 .card-kicker {
   font-family: var(--font-mono);
   font-size: 9px;
-  letter-spacing: 0.35em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--nst-red);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .gallery-card h4 {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--nst-white);
+  margin-bottom: 4px;
 }
 
 .gallery-card p {
   font-family: var(--font-body);
   font-size: 11.5px;
-  line-height: 1.5;
+  line-height: 1.45;
   color: var(--nst-silver);
 }
 
-/* ----- 06. Archive / Instagram ----- */
-.archive-stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.stat-pill {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--nst-silver);
+/* ----- Chapter 5: Living Archive ----- */
+.social-pill-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--nst-surface);
+  border: 1px solid var(--nst-border);
+  border-radius: 20px;
   padding: 6px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 50px;
+  margin-bottom: 18px;
+}
+
+.social-stat {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  color: var(--nst-white);
+}
+
+.stat-separator {
+  color: var(--nst-red);
 }
 
 .instagram-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
   width: 100%;
-  max-width: 860px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .insta-tile {
   background: var(--nst-surface);
   border: 1px solid var(--nst-border);
   border-radius: 4px;
-  padding: 18px 20px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   text-decoration: none;
-  transition: all 0.3s ease;
+  color: var(--nst-white);
+  transition: all 0.25s ease;
 }
 
 .insta-tile:hover {
-  background: var(--nst-surface-hover);
-  border-color: var(--nst-border-accent);
-  transform: translateX(4px);
+  border-color: var(--nst-red);
+  background: var(--nst-surface-elevated);
+  transform: translateY(-2px);
 }
 
 .tile-num {
@@ -625,88 +600,65 @@ div[style*="overflow"] {
   color: var(--nst-red);
 }
 
-.tile-title {
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--nst-white);
+.tile-label {
+  font-family: var(--font-display);
+  font-size: 12.5px;
   font-weight: 500;
 }
 
 .tile-arrow {
-  color: var(--nst-muted);
-  font-size: 14px;
+  color: var(--nst-silver);
+  font-size: 12px;
 }
 
-.luxury-btn {
-  display: inline-block;
-  padding: 14px 32px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--nst-white);
-  text-decoration: none;
-  border: 1px solid var(--nst-red);
-  background: rgba(200, 16, 46, 0.1);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-.luxury-btn:hover {
-  background: var(--nst-red);
-  box-shadow: 0 0 20px var(--nst-red-glow);
-}
-
-/* ----- 07. Commission Box & Form ----- */
+/* ----- Chapter 6: Commission Box ----- */
 .commission-box {
-  width: 100%;
-  max-width: 680px;
   background: var(--nst-surface);
   border: 1px solid var(--nst-border);
-  backdrop-filter: blur(20px);
-  padding: 40px;
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 26px 32px;
+  width: 100%;
+  max-width: 620px;
+  text-align: left;
 }
 
-.luxury-form {
+.commission-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  text-align: left;
+  gap: 14px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 14px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.25em;
   color: var(--nst-silver);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 12px 16px;
-  border-radius: 2px;
+  background: rgba(5, 5, 7, 0.6);
+  border: 1px solid var(--nst-border);
+  border-radius: 3px;
   color: var(--nst-white);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
+  padding: 10px 12px;
   outline: none;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s ease;
 }
 
 .form-group input:focus,
@@ -715,138 +667,133 @@ div[style*="overflow"] {
   border-color: var(--nst-red);
 }
 
-.form-group select option {
-  background: #0d0d12;
-  color: #ffffff;
-}
-
-.submit-btn {
-  padding: 16px;
+.btn-luxury-primary {
   background: var(--nst-red);
-  border: none;
-  color: #ffffff;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-  margin-top: 8px;
-}
-
-.submit-btn:hover {
-  background: #e01235;
-  box-shadow: 0 0 24px var(--nst-red-glow);
-}
-
-.form-success {
-  padding: 40px;
-  text-align: center;
-}
-
-.form-success h3 {
-  font-family: var(--font-display);
-  font-size: 24px;
   color: var(--nst-white);
-  margin-bottom: 12px;
-}
-
-.form-success p {
-  font-family: var(--font-body);
-  color: var(--nst-silver);
-  font-size: 14px;
-}
-
-/* ----- 08. Footer Styling ----- */
-.footer-inner {
-  justify-content: center;
-  height: 100%;
-}
-
-.footer-emblem-large {
-  font-family: var(--font-display);
-  font-size: clamp(60px, 10vw, 120px);
+  border: none;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.25em;
+  padding: 13px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.06);
-  letter-spacing: -0.02em;
+}
+
+.btn-luxury-primary:hover {
+  background: #e01235;
+  box-shadow: 0 0 16px var(--nst-red-glow);
+}
+
+.btn-luxury-outline {
+  background: none;
+  border: 1px solid var(--nst-red);
+  color: var(--nst-white);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  padding: 10px 20px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-luxury-outline:hover {
+  background: var(--nst-red);
+}
+
+/* ----- Chapter 7: Footer Styles ----- */
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer-monogram {
+  font-family: var(--font-display);
+  font-size: 80px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.08);
   line-height: 1;
   margin-bottom: 8px;
 }
 
-.footer-tagline {
+.footer-lead {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.4em;
-  color: var(--nst-muted);
-  margin-bottom: 48px;
-}
-
-.footer-links-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 48px;
-  text-align: left;
-  margin-bottom: 56px;
-  max-width: 720px;
-  width: 100%;
-}
-
-.footer-col h5 {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--nst-red);
-  margin-bottom: 16px;
-}
-
-.footer-col a,
-.footer-col span {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 13px;
   color: var(--nst-silver);
-  text-decoration: none;
-  margin-bottom: 10px;
-  transition: color 0.3s ease;
+  margin-bottom: 28px;
 }
 
-.footer-col a:hover {
-  color: var(--nst-white);
+.footer-columns {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--nst-silver);
+}
+
+.col-title {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.3em;
+  color: var(--nst-red);
+  margin-bottom: 4px;
 }
 
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 24px;
+  border-top: 1px solid var(--nst-border);
+  padding-top: 18px;
   width: 100%;
-  max-width: 720px;
+  max-width: 600px;
+}
+
+.footer-bottom p {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.25em;
-  color: var(--nst-muted);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 6px;
 }
 
-.footer-bottom .quote {
+.footer-quote {
+  font-family: var(--font-body);
+  font-size: 12px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.6) !important;
+  margin-bottom: 14px;
 }
 
-/* ----- Responsive Adjustments ----- */
-@media (max-width: 1024px) {
-  .universes-grid,
-  .thread-manifesto-container {
-    grid-template-columns: 1fr 1fr;
-  }
-  .atelier-showcase,
-  .gallery-grid {
-    grid-template-columns: 1fr;
-  }
-  .scroll-page {
-    padding: 30px;
-  }
+.btn-return-top {
+  background: none;
+  border: 1px solid var(--nst-border);
+  border-radius: 20px;
+  color: var(--nst-white);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.25em;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
+.btn-return-top:hover {
+  border-color: var(--nst-red);
+  color: var(--nst-red);
+}
+
+.w-full { width: 100%; }
+.mt-4 { margin-top: 16px; }
+.text-red { color: var(--nst-red); }

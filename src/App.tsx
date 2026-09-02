@@ -1,57 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SceneCanvas } from './three/SceneCanvas';
+import { ChapterOverlay } from './components/ChapterOverlay';
 import { SectionIndicator } from './components/SectionIndicator';
-import './index.css';
+import { scrollManager, TOTAL_CHAPTERS } from './state/scrollStore';
+import { soundManager } from './audio/SoundManager';
 
-/**
- * App — Root Application component.
- * Couples WebGL Canvas scroll state to the DOM navigation indicators.
- */
 export const App: React.FC = () => {
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
+  const [progress, setProgress] = useState<number>(0);
+  const [audioActive, setAudioActive] = useState<boolean>(false);
 
-  const handleDotClick = (targetPage: number) => {
-    const container = document.querySelector('div[style*="overflow: hidden auto"]') as HTMLElement | null;
-    if (container) {
-      const maxScroll = container.scrollHeight - container.clientHeight;
-      const target = (targetPage / 7) * maxScroll;
-      container.scrollTo({ top: target, behavior: 'auto' });
-    }
+  useEffect(() => {
+    // Subscribe to the 60fps virtual scroll progress
+    const unsubscribe = scrollManager.subscribe((curr) => {
+      setProgress(curr);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const toggleSound = () => {
+    soundManager.toggle();
+    setAudioActive(!audioActive);
+  };
+
+  const handleDotClick = (targetIndex: number) => {
+    scrollManager.setTarget(targetIndex);
+    soundManager.playWarp();
   };
 
   return (
-    <>
-      {/* Full-viewport 3D WebGL Canvas + 8 Synchronized Scroll Pages */}
-      <SceneCanvas onScrollChange={setScrollOffset} />
+    <main className="nst-app-container">
+      {/* 1. Global Luxury Progress Ribbon */}
+      <div
+        className="top-progress-ribbon"
+        style={{ width: `${(progress / (TOTAL_CHAPTERS - 1)) * 100}%` }}
+      />
 
-      {/* Floating Luxury Navbar */}
-      <nav className="overlay-navbar">
-        <div className="navbar-brand">
-          <span className="navbar-logo">NST</span>
-          <span className="navbar-separator">/</span>
-          <span className="navbar-tagline">Studio</span>
+      {/* 2. Floating Luxury Header */}
+      <header className="global-header">
+        <div className="brand-lockup" onClick={() => handleDotClick(0)}>
+          <span className="brand-logo">NST</span>
+          <span className="brand-divider">/</span>
+          <span className="brand-sub">STUDIO</span>
         </div>
-        <div className="navbar-links">
-          <a
-            href="https://www.instagram.com/nststudio.in/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="navbar-link"
+
+        <nav className="header-actions">
+          <button
+            className={`btn-sound-toggle ${audioActive ? 'active' : ''}`}
+            onClick={toggleSound}
+            title="Toggle Audio Atmosphere"
           >
-            Instagram @nststudio.in
-          </a>
-          <span onClick={() => handleDotClick(6)} className="navbar-link navbar-contact">
-            Commission Inquiry
-          </span>
-        </div>
-      </nav>
+            <span className="sound-icon">{audioActive ? '✦ SOUND ON' : '◇ SOUND OFF'}</span>
+          </button>
 
-      {/* Synchronized Cartier-Style Side Dots Navigation */}
+          <a
+            href="https://www.instagram.com/nststudio.in"
+            target="_blank"
+            rel="noreferrer"
+            className="header-link"
+          >
+            INSTAGRAM @NSTSTUDIO.IN
+          </a>
+
+          <button
+            className="btn-commission-cta"
+            onClick={() => handleDotClick(6)}
+          >
+            COMMISSION INQUIRY
+          </button>
+        </nav>
+      </header>
+
+      {/* 3. 3D WebGL Canvas Layer (Inward Depth Camera) */}
+      <SceneCanvas />
+
+      {/* 4. Foreground Chapter Narrative Overlay */}
+      <ChapterOverlay progress={progress} />
+
+      {/* 5. Cartier Vertical Dot Navigation */}
       <SectionIndicator
-        scrollOffset={scrollOffset}
+        scrollOffset={progress / (TOTAL_CHAPTERS - 1)}
         onSelectSection={handleDotClick}
       />
-    </>
+    </main>
   );
 };
 

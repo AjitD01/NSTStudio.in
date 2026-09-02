@@ -30,6 +30,14 @@ class SoundManager {
     }
   }
 
+  public toggle(): boolean {
+    return this.toggleAmbient();
+  }
+
+  public playWarp() {
+    this.playClick();
+  }
+
   public getIsAmbientPlaying(): boolean {
     return this.isAmbientPlaying;
   }
