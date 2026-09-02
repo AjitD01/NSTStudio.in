@@ -43,7 +43,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #101016 0%, #060608 100%);
+  background: radial-gradient(circle at 50% 50%, #151520 0%, #060608 100%);
 }
 
 /* ----- Top Progress Ribbon ----- */
@@ -232,13 +232,13 @@ html, body {
    CHAPTER 0: PROLOGUE STYLES (Clean, Spacious, Majestic)
    ========================================================================= */
 .prologue-hero-card {
-  background: var(--nst-surface);
-  border: 1px solid var(--nst-border);
+  background: rgba(14, 14, 20, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 34px 44px 28px 44px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 24px rgba(255, 34, 34, 0.06);
+  padding: 30px 44px 26px 44px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;

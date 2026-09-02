@@ -493,15 +493,15 @@ export const InwardWorld: React.FC = () => {
   return (
     <>
       <InwardCamera />
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[10, 16, 12]} intensity={1.3} color="#ffffff" />
-      <pointLight position={[0, 0, 8]} intensity={2.8} color="#e0a96d" distance={35} />
-      <pointLight position={[0, 0, -60]} intensity={2.5} color="#ffffff" distance={65} />
+      <ambientLight intensity={0.65} />
+      <directionalLight position={[10, 16, 12]} intensity={1.4} color="#ffffff" />
+      <pointLight position={[0, 0, 10]} intensity={3.2} color="#e0a96d" distance={40} />
+      <pointLight position={[0, 0, -60]} intensity={2.8} color="#ffffff" distance={65} />
       <pointLight position={[0, 0, -112]} intensity={3.0} color="#e0a96d" distance={70} />
       <pointLight position={[0, 0, -180]} intensity={3.5} color="#ff2222" distance={90} />
 
-      {/* Atmospheric Fog */}
-      <fog attach="fog" args={['#060608', 8, 85]} />
+      {/* Atmospheric Fog - pushed back to 16 so initial landing scene is radiant and clear */}
+      <fog attach="fog" args={['#060608', 16, 115]} />
 
       {/* Spatial 3D Elements */}
       <DeepTunnelParticles />
