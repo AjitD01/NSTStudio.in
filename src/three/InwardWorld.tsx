@@ -10,42 +10,44 @@ import { scrollManager, TOTAL_CHAPTERS } from '../state/scrollStore';
 interface CameraKeyframe {
   pos: [number, number, number];
   target: [number, number, number];
+  up?: [number, number, number];
 }
 
 const CAMERA_KEYFRAMES: CameraKeyframe[] = [
-  // 0. Prologue: Symmetrical Frontal Eye-Level Hero View (0° Azimuth)
-  { pos: [0, 0, 10.5], target: [0, 0, 0] },
+  // 0. Prologue: Symmetrical Frontal Eye-Level Hero View
+  { pos: [0, 0, 10.5], target: [0, 0, 0], up: [0, 1, 0] },
 
-  // 1. Four Universes: Dynamic Quarter-Right Angle (+48° Azimuth, slightly elevated)
-  { pos: [7.8, 2.2, 7.8], target: [0, 0.2, 0] },
+  // 1. Four Universes: High Top-Down Crown Bore Dive (looking down the vertical axis of the flute)
+  { pos: [1.8, 10.2, 3.2], target: [0, 1.2, 0], up: [-0.35, 0.3, -0.88] },
 
-  // 2. Logo Genesis & Lore: Pure 90° Side Profile View (focusing on tone holes & craftsmanship)
-  { pos: [10.5, -0.2, 0.5], target: [0, 0, 0] },
+  // 2. Logo Genesis & Lore: Lateral 90° Profile with Dutch Angle Bank
+  { pos: [10.5, -0.8, 1.2], target: [0, -0.2, 0], up: [0.25, 0.94, 0.22] },
 
-  // 3. Atelier Savoir-Faire: Heroic Low-Angle Tilt-Up (-45° looking up the flute length)
-  { pos: [-6.5, -4.0, 7.5], target: [0, 0.8, 0] },
+  // 3. Atelier Savoir-Faire: Heroic Low-Angle Under-Swoop (looking up from beneath the base)
+  { pos: [-2.5, -9.8, 4.2], target: [0, 0.5, 0], up: [0.35, 0.55, 0.75] },
 
-  // 4. Selected Works: Top-Down Isometric Exhibition Angle (+55° pitch, inspection view)
-  { pos: [6.2, 7.2, 6.2], target: [0, -0.4, 0] },
+  // 4. Selected Works: Dynamic Diagonal 3D Helix (top-left-rear looking down across the flute)
+  { pos: [-7.2, 6.8, -6.2], target: [0, -0.2, 0], up: [0.45, 0.72, -0.52] },
 
-  // 5. Living Social Archive: 175° Reverse Perspective (view from behind the flute)
-  { pos: [-1.2, 1.8, -10.2], target: [0, 0, 0] },
+  // 5. Living Social Archive: Reverse Horizon 180° (rear perspective)
+  { pos: [0.2, 1.2, -10.8], target: [0, 0, 0], up: [0, 1, 0] },
 
-  // 6. Private Commission: Intimate 3/4 Studio Dialogue Angle (-35° eye-level)
-  { pos: [-7.2, 0.6, 7.2], target: [0, -0.2, 0] },
+  // 6. Private Commission: Intimate Low-Oblique Studio Angle (-45° pitch, intimate dialog)
+  { pos: [-6.8, -3.2, -6.8], target: [0, 0.2, 0], up: [-0.3, 0.85, 0.43] },
 
-  // 7. Maison Epilogue: Grand Symmetrical High Showcase Overview
-  { pos: [0, 3.8, 10.2], target: [0, 0, 0] },
+  // 7. Maison Epilogue: Grand Symmetrical High Showcase Zenith
+  { pos: [0, 4.5, 10.0], target: [0, 0, 0], up: [0, 1, 0] },
 ];
 
 /**
- * 1. Multi-Angle Exhibition Camera Controller
- * Smoothly interpolates camera position & target between chapter keyframes.
+ * 1. Multi-Axis Exhibition Camera Controller
+ * Smoothly interpolates camera position, target, and roll orientation across 3D Cartesian planes.
  */
 export const OrbitExhibitionCamera: React.FC = () => {
   const { camera, pointer, size } = useThree();
   const currentPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 10.5));
   const currentTargetRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
+  const currentUpRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 1, 0));
 
   useFrame(() => {
     // 60fps lerped virtual scroll progress (0..7)
@@ -71,6 +73,10 @@ export const OrbitExhibitionCamera: React.FC = () => {
     const targetLookB = new THREE.Vector3(...kfB.target);
     const interpolatedLook = new THREE.Vector3().lerpVectors(targetLookA, targetLookB, t);
 
+    const targetUpA = new THREE.Vector3(...(kfA.up || [0, 1, 0]));
+    const targetUpB = new THREE.Vector3(...(kfB.up || [0, 1, 0]));
+    const interpolatedUp = new THREE.Vector3().lerpVectors(targetUpA, targetUpB, t).normalize();
+
     // Mobile portrait adaptation: pull camera back slightly so the flute & character fit phone screens
     const isPortrait = size.width < size.height;
     if (isPortrait) {
@@ -82,10 +88,12 @@ export const OrbitExhibitionCamera: React.FC = () => {
     interpolatedPos.x += pointer.x * 0.9 * parallaxScale;
     interpolatedPos.y += pointer.y * 0.6 * parallaxScale;
 
-    // Smooth lerp to destination
+    // Smooth lerp to destination across all 3 axes
     currentPosRef.current.lerp(interpolatedPos, 0.085);
     currentTargetRef.current.lerp(interpolatedLook, 0.085);
+    currentUpRef.current.lerp(interpolatedUp, 0.085);
 
+    camera.up.copy(currentUpRef.current);
     camera.position.copy(currentPosRef.current);
     camera.lookAt(currentTargetRef.current);
   });
