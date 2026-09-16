@@ -24,5 +24,11 @@ dist-ssr
 *.sw?
 screenshots/
 screenshots_inward/
+audit_screenshots/
 test-*.js
 take-screenshots.js
+test_*.png
+screenshot_*.png
+lyniq_*.png
+blueprint_*.png
+

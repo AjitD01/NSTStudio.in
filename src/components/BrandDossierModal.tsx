@@ -12,14 +12,18 @@ export const BrandDossierModal: React.FC<BrandDossierModalProps> = ({
   onClose,
   initialPage = 1,
 }) => {
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [currentPageIndex, setCurrentPageIndex] = useState(() => {
+    const idx = BRAND_PAGES_LIST.findIndex((p) => p.page === initialPage);
+    return idx !== -1 ? idx : 0;
+  });
 
-  useEffect(() => {
-    if (initialPage) {
-      const idx = BRAND_PAGES_LIST.findIndex((p) => p.page === initialPage);
-      if (idx !== -1) setCurrentPageIndex(idx);
-    }
-  }, [initialPage]);
+  const handlePrev = () => {
+    setCurrentPageIndex((prev) => (prev > 0 ? prev - 1 : BRAND_PAGES_LIST.length - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPageIndex((prev) => (prev < BRAND_PAGES_LIST.length - 1 ? prev + 1 : 0));
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,19 +34,11 @@ export const BrandDossierModal: React.FC<BrandDossierModalProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentPageIndex]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   const currentItem = BRAND_PAGES_LIST[currentPageIndex];
-
-  const handlePrev = () => {
-    setCurrentPageIndex((prev) => (prev > 0 ? prev - 1 : BRAND_PAGES_LIST.length - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPageIndex((prev) => (prev < BRAND_PAGES_LIST.length - 1 ? prev + 1 : 0));
-  };
 
   return (
     <div className="dossier-modal-backdrop" onClick={onClose}>

@@ -1,10 +1,10 @@
 /**
- * scrollStore — High-Performance Virtual Scroll Engine with Cartier-Style Chapter Snapping.
- * Ensures the camera flies cleanly from chamber to chamber without ever getting stuck in the middle.
- * 60fps locked, zero lag, silky smooth backward and forward navigation.
+ * scrollStore — Smooth Scroll Engine for Vertical Agency Experience.
+ * Binds seamlessly to continuous document scroll while keeping 60fps lerped camera smoothing.
  */
 
-export const TOTAL_CHAPTERS = 8;
+export const TOTAL_SECTIONS = 8;
+export const TOTAL_CHAPTERS = 8; // Backward compatibility
 
 export class ScrollManager {
   private static instance: ScrollManager;
@@ -12,7 +12,6 @@ export class ScrollManager {
   public current: number = 0;
   private listeners: Set<(progress: number, target: number) => void> = new Set();
   private isListening: boolean = false;
-  private lastScrollTime: number = 0;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -31,91 +30,45 @@ export class ScrollManager {
     if (this.isListening) return;
     this.isListening = true;
 
-    // Cartier-style gesture snapping: each deliberate wheel flick advances/retreats a chamber
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-
-      const now = performance.now();
-      // 400ms gesture throttle prevents runaway scrolling while feeling crisp and responsive
-      if (now - this.lastScrollTime < 400) return;
-
-      if (Math.abs(e.deltaY) > 15) {
-        this.lastScrollTime = now;
-        if (e.deltaY > 0) {
-          // Inward flight to next chapter
-          this.setTarget(Math.min(TOTAL_CHAPTERS - 1, Math.round(this.target) + 1));
-        } else {
-          // Outward flight back to previous chapter
-          this.setTarget(Math.max(0, Math.round(this.target) - 1));
-        }
-      }
+    const onScroll = () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const maxScroll = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      const fraction = Math.max(0, Math.min(1, scrollY / maxScroll));
+      this.target = fraction * (TOTAL_SECTIONS - 1);
+      this.notify();
     };
 
-    // Touch gestures for mobile/tablets
-    let touchStartY = 0;
-    let touchStartX = 0;
-    let isTouchInteractive = false;
-    const onTouchStart = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      if (target && target.closest('input, textarea, select, button, a, .dossier-modal-container, .filmstrip-thumb')) {
-        isTouchInteractive = true;
-        return;
-      }
-      isTouchInteractive = false;
-      touchStartY = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      if (isTouchInteractive) return;
-      const touchEndY = e.changedTouches[0].clientY;
-      const touchEndX = e.changedTouches[0].clientX;
-      const dy = touchStartY - touchEndY;
-      const dx = touchStartX - touchEndX;
-      // Require clear vertical intent over 45px
-      if (Math.abs(dy) > 45 && Math.abs(dy) > Math.abs(dx) * 1.25) {
-        if (dy > 0) {
-          this.setTarget(Math.min(TOTAL_CHAPTERS - 1, Math.round(this.target) + 1));
-        } else {
-          this.setTarget(Math.max(0, Math.round(this.target) - 1));
-        }
-      }
-    };
-
-    // Keyboard navigation (Arrow keys, Space, PageUp/Down)
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
-        return;
-      }
-      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-        e.preventDefault();
-        this.setTarget(Math.min(TOTAL_CHAPTERS - 1, Math.round(this.target) + 1));
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        e.preventDefault();
-        this.setTarget(Math.max(0, Math.round(this.target) - 1));
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        this.setTarget(0);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        this.setTarget(TOTAL_CHAPTERS - 1);
-      }
-    };
-
-    window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Initial sync
+    setTimeout(onScroll, 50);
   }
 
   public setTarget(index: number) {
-    this.target = Math.max(0, Math.min(TOTAL_CHAPTERS - 1, index));
+    this.target = Math.max(0, Math.min(TOTAL_SECTIONS - 1, index));
+    const maxScroll = Math.max(
+      1,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+    const targetScrollY = (this.target / (TOTAL_SECTIONS - 1)) * maxScroll;
+    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
     this.notify();
   }
 
-  public update(lerpFactor: number = 0.085): number {
+  public scrollToSection(sectionId: string) {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const yOffset = -70; // Header offset
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }
+
+  public update(lerpFactor: number = 0.075): number {
     this.current += (this.target - this.current) * lerpFactor;
-    // Snap when close to rest
-    if (Math.abs(this.target - this.current) < 0.002) {
+    if (Math.abs(this.target - this.current) < 0.001) {
       this.current = this.target;
     }
     this.notify();
@@ -133,3 +86,4 @@ export class ScrollManager {
 }
 
 export const scrollManager = ScrollManager.getInstance();
+
