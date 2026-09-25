@@ -6,170 +6,270 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenDossier }) => {
-  const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavClick = (sectionId: string) => {
     scrollManager.scrollToSection(sectionId);
-    setFloatingMenuOpen(false);
+    setMobileMenuOpen(false);
   };
 
   return (
     <>
-      <header className="site-header">
-        <div className="site-header-inner">
-          {/* Official Prototype Brand Lockup (Mascot + Camera line + NST STUDIO) */}
+      <header className="dzinr-site-header">
+        <div className="header-container">
+          {/* 1. Left Brand Monogram Lockup */}
           <div
-            className="header-brand-lockup"
+            className="dzinr-brand-lockup cursor-pointer"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
-              setFloatingMenuOpen(false);
+              setMobileMenuOpen(false);
             }}
             title="NST Studio - Back to Top"
           >
-            <img
-              src="/nst/logomark_light.png"
-              alt="NST Official Mascot Mark"
-              className="header-mascot-img"
-            />
-            <div className="header-brand-typography">
-              <span className="brand-nst">NST</span>
-              <span className="brand-dot-red">.</span>
-              <span className="brand-studio">STUDIO</span>
+            <div className="brand-logo-symbol">
+              <span className="brand-letters">NST</span>
+              <span className="brand-dot-accent">.</span>
+            </div>
+            <div className="brand-meta-column hidden sm:flex">
+              <span className="brand-studio-title">STORYTELLING STUDIO</span>
+              <span className="brand-status-indicator">
+                <span className="status-dot-live" />
+                AVAILABLE WORLDWIDE
+              </span>
             </div>
           </div>
 
-          {/* Desktop Direct Links from Prototype */}
-          <nav className="header-nav-menu">
+          {/* 2. Center/Right Direct Links with DZINR Roll-up Hover Effect */}
+          <nav className="dzinr-nav-menu hidden lg:flex">
             <button
-              className="nav-link-item"
-              onClick={() => handleNavClick('what-we-offer')}
+              className="dzinr-nav-link"
+              onClick={() => handleNavClick('projects-section')}
             >
-              Blogs
+              <span className="rollup-wrapper">
+                <span className="rollup-text">Work</span>
+                <span className="rollup-hover">Work</span>
+              </span>
             </button>
+
             <button
-              className="nav-link-item"
+              className="dzinr-nav-link"
               onClick={() => handleNavClick('services-section')}
             >
-              Service
+              <span className="rollup-wrapper">
+                <span className="rollup-text">Services</span>
+                <span className="rollup-hover">Services</span>
+              </span>
             </button>
+
+            <button
+              className="dzinr-nav-link"
+              onClick={() => handleNavClick('what-we-offer')}
+            >
+              <span className="rollup-wrapper">
+                <span className="rollup-text">What We Offer</span>
+                <span className="rollup-hover">What We Offer</span>
+              </span>
+            </button>
+
+            <button
+              className="dzinr-nav-link"
+              onClick={() => onOpenDossier(1)}
+            >
+              <span className="rollup-wrapper">
+                <span className="rollup-text">
+                  Dossier <span className="nav-badge-pdf">PDF</span>
+                </span>
+                <span className="rollup-hover">
+                  Dossier <span className="nav-badge-pdf">PDF</span>
+                </span>
+              </span>
+            </button>
+
+            <button
+              className="dzinr-nav-link"
+              onClick={() => handleNavClick('faq-section')}
+            >
+              <span className="rollup-wrapper">
+                <span className="rollup-text">FAQ</span>
+                <span className="rollup-hover">FAQ</span>
+              </span>
+            </button>
+
+            <div className="nav-divider-vertical" />
+
+            <a
+              href="https://www.instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              className="dzinr-nav-link external-link"
+            >
+              <span className="rollup-wrapper">
+                <span className="rollup-text">Instagram</span>
+                <span className="rollup-hover">Instagram</span>
+              </span>
+            </a>
+
             <a
               href="https://www.linkedin.com"
               target="_blank"
               rel="noreferrer"
-              className="nav-link-item nav-social-link"
-              title="LinkedIn"
+              className="dzinr-nav-link external-link"
             >
-              In | In
+              <span className="rollup-wrapper">
+                <span className="rollup-text">LinkedIn</span>
+                <span className="rollup-hover">LinkedIn</span>
+              </span>
             </a>
-            <button
-              className="nav-link-plus-btn"
-              onClick={() => handleNavClick('about-section')}
-              title="About Nikunj Storytelling Studio"
-            >
-              +
-            </button>
           </nav>
 
-          {/* Right Floating Badge & Menu Trigger from Prototype */}
-          <div className="header-actions-group">
-            {/* Prototype: Red 'US 1' status pill */}
-            <div
-              className="header-status-pill"
-              onClick={() => handleNavClick('contact-section')}
-              title="Accepting Commissions worldwide"
-            >
-              <span className="status-pill-text">US 1</span>
-            </div>
-
-            {/* Dossier Quick Access */}
+          {/* 3. Right Action: DZINR Liquid Wave "Let's Talk" CTA + Mobile Toggle */}
+          <div className="dzinr-actions-group">
             <button
-              className="header-dossier-pill"
-              onClick={() => onOpenDossier(1)}
-              title="Open Brand Dossier"
+              className="dzinr-talk-btn"
+              onClick={() => handleNavClick('contact-section')}
+              aria-label="Let's Talk"
             >
-              <span className="dossier-label">Dossier</span>
+              <div className="talk-liquid-wave" aria-hidden="true">
+                <svg
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  className="wave-svg"
+                >
+                  <path
+                    d="M0,30 Q50,-5 100,30 L100,100 L0,100 Z"
+                    fill="#FF2222"
+                  />
+                </svg>
+              </div>
+              <span className="talk-btn-content">
+                <span className="talk-text">Let's Talk</span>
+                <svg
+                  className="talk-arrow-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                >
+                  <path
+                    d="M5 12h14M12 5l7 7-7 7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
             </button>
 
-            {/* Hamburger Button (==) Triggering Prototype's Floating Menu */}
+            {/* Mobile Hamburger Toggle */}
             <button
-              className={`prototype-hamburger-btn ${floatingMenuOpen ? 'active' : ''}`}
-              onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
+              className={`dzinr-mobile-toggle lg:hidden ${mobileMenuOpen ? 'open' : ''}`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
-              title="Toggle Menu"
             >
-              <span className="hamburger-line line-1" />
-              <span className="hamburger-line line-2" />
+              <span className="toggle-bar bar-1" />
+              <span className="toggle-bar bar-2" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Floating Menu Modal (Matching top-right of NST WEB PROTOTYPE REF 1 (2).png) */}
-      {floatingMenuOpen && (
+      {/* Fullscreen Mobile Drawer (DZINR Inspired) */}
+      {mobileMenuOpen && (
         <div
-          className="prototype-floating-menu-backdrop"
-          onClick={() => setFloatingMenuOpen(false)}
+          className="dzinr-mobile-drawer"
+          onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="prototype-floating-menu-card"
+            className="mobile-drawer-inner"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              className="floating-menu-close"
-              onClick={() => setFloatingMenuOpen(false)}
-              aria-label="Close menu"
-            >
-              ✕
-            </button>
-
-            {/* Menu Links with hover transitions */}
-            <div className="floating-menu-links">
+            <div className="drawer-header-row">
+              <span className="drawer-brand-label">NST® // MENU</span>
               <button
-                className="floating-nav-link"
-                onClick={() => handleNavClick('hero-section')}
+                className="drawer-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
               >
-                Home
-              </button>
-              <button
-                className="floating-nav-link"
-                onClick={() => handleNavClick('projects-section')}
-              >
-                Projects
-              </button>
-              <button
-                className="floating-nav-link"
-                onClick={() => handleNavClick('about-section')}
-              >
-                About
-              </button>
-              <button
-                className="floating-nav-link"
-                onClick={() => handleNavClick('services-section')}
-              >
-                Blog
-              </button>
-              <button
-                className="floating-nav-link"
-                onClick={() => handleNavClick('contact-section')}
-              >
-                Contact
+                ✕
               </button>
             </div>
 
-            {/* Subtle background branding & studio note */}
-            <div className="floating-menu-footer">
-              <span className="floating-menu-caption">
-                NIKUNJ STORYTELLING STUDIO · STORY FIRST.
-              </span>
-              <a
-                href="https://www.facebook.com/share/1HAfkeHAq5/"
-                target="_blank"
-                rel="noreferrer"
-                className="floating-menu-fb-link"
+            <div className="drawer-nav-list">
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('hero-section')}
               >
-                Connect on Facebook ↗
-              </a>
+                <span className="drawer-num">01</span>
+                <span className="drawer-title">Home</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('projects-section')}
+              >
+                <span className="drawer-num">02</span>
+                <span className="drawer-title">Work & Projects</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('services-section')}
+              >
+                <span className="drawer-num">03</span>
+                <span className="drawer-title">Services</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('what-we-offer')}
+              >
+                <span className="drawer-num">04</span>
+                <span className="drawer-title">What We Offer</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => {
+                  onOpenDossier(1);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <span className="drawer-num">05</span>
+                <span className="drawer-title">Brand Dossier (PDF)</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('faq-section')}
+              >
+                <span className="drawer-num">06</span>
+                <span className="drawer-title">FAQ</span>
+              </button>
+              <button
+                className="drawer-nav-item"
+                onClick={() => handleNavClick('contact-section')}
+              >
+                <span className="drawer-num">07</span>
+                <span className="drawer-title">Contact</span>
+              </button>
+            </div>
+
+            <div className="drawer-footer-row">
+              <div className="drawer-socials">
+                <a
+                  href="https://www.instagram.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="drawer-social-link"
+                >
+                  Instagram ↗
+                </a>
+                <a
+                  href="https://www.linkedin.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="drawer-social-link"
+                >
+                  LinkedIn ↗
+                </a>
+              </div>
+              <span className="drawer-copyright">
+                © 2025 NIKUNJ STORYTELLING STUDIO
+              </span>
             </div>
           </div>
         </div>

@@ -1,221 +1,198 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { scrollManager } from '../state/scrollStore';
 
-interface ProjectCase {
+interface ProjectPanel {
   id: string;
-  tabTitle: string;
   title: string;
   category: string;
+  deliverable: string;
   year: string;
   description: string;
   image: string;
-  tags: string[];
+  bgColor: string;
+  accentColor: string;
+  textColor: string;
 }
 
-const PROJECTS: ProjectCase[] = [
+const DZINR_PROJECTS: ProjectPanel[] = [
   {
-    id: 'campaign-1',
-    tabTitle: 'Campaign',
-    title: 'Arpeggio Sound Architecture',
-    category: 'BRANDING · CAMPAIGN · PACKAGING',
+    id: 'arpeggio-sound',
+    title: 'Arpeggio Sound',
+    category: 'Acoustic Architecture',
+    deliverable: 'Brand & Packaging',
     year: '2026',
     description:
       'A holistic visual identity and acoustic hardware packaging ecosystem for high-fidelity audio equipment. Crafted with debossed foil stamping, tactile uncoated stock, and architectural precision.',
     image: '/brand/p57_0.jpg',
-    tags: ['Acoustic Identity', 'Debossed Foil', 'Bespoke Type'],
+    bgColor: '#0c1926',
+    accentColor: '#38bdf8',
+    textColor: '#ffffff',
   },
   {
-    id: 'branding-2',
-    tabTitle: 'Branding',
-    title: 'Maison Monogram & Sacred Mark',
-    category: 'SEMIOTICS & LOGO ARCHITECTURE',
+    id: 'sacred-mark',
+    title: 'Sacred Mark Suite',
+    category: 'Semiotics & Identity',
+    deliverable: 'Brand Dossier (26 Pages)',
     year: '2026',
     description:
       'Geometric deconstruction of the Krishna mascot and cinematic camera aperture into a clean, modern emblem built for global luxury recognition.',
     image: '/brand/p32_0.jpg',
-    tags: ['Sacred Geometry', 'Brand Guidelines', 'Dossier'],
+    bgColor: '#1e0b16',
+    accentColor: '#f43f5e',
+    textColor: '#ffffff',
   },
   {
-    id: 'packaging-3',
-    tabTitle: 'Packaging',
-    title: 'Tactile Collateral Suite',
-    category: 'PRINT DIRECTION & PACKAGING',
+    id: 'tactile-collateral',
+    title: 'Tactile Collateral',
+    category: 'Print Direction',
+    deliverable: 'Luxury Stationery & Boxes',
     year: '2026',
     description:
       'Bespoke stationery, letterheads, business cards, and velvet-touch presentation boxes designed for high-touch executive interactions.',
     image: '/brand/p51_0.jpg',
-    tags: ['Tactile Print', 'Luxury Stationery', 'Brand Dossier'],
+    bgColor: '#1a1714',
+    accentColor: '#f59e0b',
+    textColor: '#fef3c7',
   },
   {
-    id: 'digital-4',
-    tabTitle: 'Digital 3D',
-    title: 'Kinetic Campaign Triptych',
-    category: '3D WEBGL & MOTION DIRECTION',
+    id: 'kinetic-triptych',
+    title: 'Kinetic Triptych',
+    category: '3D WebGL Direction',
+    deliverable: 'Multi-Screen Film Loops',
     year: '2026',
     description:
       'Visual stories through motion that breathe soul into corporate vision. Multi-screen exhibition loops and 3D product unveilings.',
     image: '/brand/p47_0.jpg',
-    tags: ['3D WebGL', 'Kinetic Typography', 'Brand Film'],
+    bgColor: '#180808',
+    accentColor: '#ff2222',
+    textColor: '#ffffff',
   },
 ];
 
 export const ProjectsSection: React.FC = () => {
-  const [activeTabIdx, setActiveTabIdx] = useState<number>(0);
-  const currentProject = PROJECTS[activeTabIdx];
-
   return (
-    <section id="projects-section" className="prototype-projects-section">
-      <div className="section-container">
-        {/* Prototype Header with Plus Grid Marks */}
-        <div className="projects-header-wrapper">
-          <div className="grid-crosshair-mark top-left">+</div>
-          <div className="grid-crosshair-mark top-right">+</div>
+    <section id="projects-section" className="dzinr-projects-section">
+      {/* 1. Section Kicker Header */}
+      <div className="projects-editorial-header">
+        <div className="section-tag-kicker">SELECTED ARCHIVE // COMMISSIONS</div>
+        <h2 className="section-title-monumental">
+          Projects<span className="text-red-accent">.</span>
+        </h2>
+        <p className="section-intro-text">
+          Crafting indelible visual and verbal worlds for brands that dare to lead.
+        </p>
+      </div>
 
-          <div className="section-tag-kicker">SELECTED ARCHIVE</div>
-          <h2 className="section-title-large">
-            Projects<span className="text-red-accent">.</span>
-          </h2>
-          <p className="section-intro-text">
-            Crafting indelible visual and verbal worlds for brands that dare to lead.
-          </p>
-        </div>
-
-        {/* Prototype: Ascending Layered Project Cards */}
-        <div className="projects-ascending-stage">
-          {/* Vertical Tab Navigation (Campaign / Branding / Packaging / Digital) */}
-          <div className="ascending-tabs-column">
-            {PROJECTS.map((proj, idx) => (
-              <button
-                key={proj.id}
-                className={`ascending-tab-item ${activeTabIdx === idx ? 'active-tab' : ''}`}
-                onClick={() => setActiveTabIdx(idx)}
-              >
-                <span className="tab-vertical-text">{proj.tabTitle}</span>
-                <span className="tab-index">0{idx + 1}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Main Active Project Showcase Card */}
-          <div className="ascending-card-surface">
-            <div className="card-top-indicator-bar">
-              <div className="card-nst-brand">
-                <span className="brand-nst-text">NST</span>
-                <span className="brand-dot-red">.</span>
-                <span className="brand-cat-tag">{currentProject.category}</span>
-              </div>
-              <span className="card-year-tag">{currentProject.year}</span>
+      {/* 2. Full-Bleed DZINR-Style Project Cards Stack */}
+      <div className="dzinr-project-cards-stack">
+        {DZINR_PROJECTS.map((proj, idx) => (
+          <article
+            key={proj.id}
+            className="dzinr-project-card group"
+            style={{ backgroundColor: proj.bgColor, color: proj.textColor }}
+            onClick={() => scrollManager.scrollToSection('contact-section')}
+          >
+            {/* Top Project Visual Media Container */}
+            <div className="project-card-media-wrapper">
+              <img
+                src={proj.image}
+                alt={proj.title}
+                className="project-card-image"
+                loading="lazy"
+              />
+              <div className="project-card-gradient-scrim" />
+              <div className="project-index-badge">0{idx + 1}</div>
             </div>
 
-            <div className="card-visual-and-content">
-              <div className="card-image-display">
-                <img
-                  src={currentProject.image}
-                  alt={currentProject.title}
-                  className="card-main-image"
-                />
-                <div className="card-image-tint" />
+            {/* Bottom Meta & Title Bar */}
+            <div className="project-card-info-pane">
+              {/* Category & Tags Strip */}
+              <div className="project-meta-pills-row">
+                <span
+                  className="meta-pill-year"
+                  style={{ borderColor: proj.accentColor, color: proj.accentColor }}
+                >
+                  {proj.year}
+                </span>
+                <span className="meta-category-tag">{proj.category}</span>
+                <span className="meta-deliverable-tag hidden sm:inline-block">
+                  {proj.deliverable}
+                </span>
               </div>
 
-              <div className="card-editorial-details">
-                <h3 className="card-project-title">{currentProject.title}</h3>
-                <p className="card-project-desc">{currentProject.description}</p>
-
-                <div className="card-tags-row">
-                  {currentProject.tags.map((tag, tIdx) => (
-                    <span key={tIdx} className="card-tag-pill">
-                      {tag}
+              {/* Title & Rotating Arrow CTA Row */}
+              <div className="project-title-action-row">
+                <div className="project-headline-wrapper">
+                  <h3 className="project-monumental-name">
+                    <span className="rollup-wrapper">
+                      <span className="rollup-text">{proj.title}</span>
+                      <span className="rollup-hover">{proj.title}</span>
                     </span>
-                  ))}
+                  </h3>
+                  <p className="project-synopsis-line hidden md:block">
+                    {proj.description}
+                  </p>
                 </div>
 
-                <button
-                  className="card-inquire-btn"
-                  onClick={() => scrollManager.scrollToSection('contact-section')}
+                {/* DZINR Circular -45° to 0° Rotating Arrow Button */}
+                <div
+                  className="dzinr-arrow-circle-btn"
+                  style={{ borderColor: proj.textColor }}
                 >
-                  <span>Inquire for Similar Commission</span>
-                  <span className="arrow-icon">→</span>
-                </button>
+                  <span
+                    className="arrow-circle-inner"
+                    style={{ backgroundColor: proj.textColor }}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={proj.bgColor}
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="arrow-svg"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </article>
+        ))}
+      </div>
 
-        {/* Prototype: Film Sprocket Manifesto Banner */}
-        <div className="prototype-film-manifesto-banner">
-          {/* Left Film Sprocket Reel */}
-          <div className="film-reel-icon left-reel">
-            <svg viewBox="0 0 100 100" className="reel-svg" fill="none">
-              <circle cx="50" cy="50" r="44" stroke="#44444c" strokeWidth="3" strokeDasharray="4 2" />
-              <circle cx="50" cy="50" r="26" stroke="#44444c" strokeWidth="2.5" />
-              <circle cx="50" cy="50" r="8" fill="#FF2222" />
-              {/* Sprocket film holes */}
-              <circle cx="50" cy="14" r="4" fill="#333339" />
-              <circle cx="50" cy="86" r="4" fill="#333339" />
-              <circle cx="14" cy="50" r="4" fill="#333339" />
-              <circle cx="86" cy="50" r="4" fill="#333339" />
-              <circle cx="24" cy="24" r="4" fill="#333339" />
-              <circle cx="76" cy="24" r="4" fill="#333339" />
-              <circle cx="24" cy="76" r="4" fill="#333339" />
-              <circle cx="76" cy="76" r="4" fill="#333339" />
-            </svg>
+      {/* 3. DZINR Closing Quote & Impact Statement */}
+      <div className="dzinr-closing-statement-banner">
+        <div className="closing-banner-inner">
+          <div className="closing-header-row">
+            <span className="closing-kicker-tag">[ ARCHIVE IMPACT ]</span>
+            <h3 className="closing-big-title">Selected Works</h3>
           </div>
 
-          {/* Center Manifesto Quote from Prototype */}
-          <div className="manifesto-quote-body">
-            <p className="manifesto-text">
-              NST is a <span className="text-red-highlight font-bold">Creative Studio</span>,
-              <br />
-              Trusted By Brands who
-              <br />
-              aren't Afraid to <span className="text-red-highlight font-bold">Standout.</span>
-            </p>
-          </div>
+          <p className="closing-quote-statement">
+            These are not just projects, they are stories of our clients, our craft,
+            and the indelible impact we composed together.
+          </p>
 
-          {/* Right Film Sprocket Reel */}
-          <div className="film-reel-icon right-reel">
-            <svg viewBox="0 0 100 100" className="reel-svg" fill="none">
-              <circle cx="50" cy="50" r="44" stroke="#44444c" strokeWidth="3" strokeDasharray="4 2" />
-              <circle cx="50" cy="50" r="26" stroke="#44444c" strokeWidth="2.5" />
-              <circle cx="50" cy="50" r="8" fill="#FF2222" />
-              <circle cx="50" cy="14" r="4" fill="#333339" />
-              <circle cx="50" cy="86" r="4" fill="#333339" />
-              <circle cx="14" cy="50" r="4" fill="#333339" />
-              <circle cx="86" cy="50" r="4" fill="#333339" />
-              <circle cx="24" cy="24" r="4" fill="#333339" />
-              <circle cx="76" cy="24" r="4" fill="#333339" />
-              <circle cx="24" cy="76" r="4" fill="#333339" />
-              <circle cx="76" cy="76" r="4" fill="#333339" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Prototype: Twin Supporting Cards Below Manifesto */}
-        <div className="manifesto-subcards-row">
-          {/* White Card: NST shaping brand story */}
-          <div className="white-story-card">
-            <h4 className="white-story-heading">
-              NST is a Creative Studio shaping Your Brand Story and Daring Ideas
-            </h4>
-            <p className="white-story-sub">
-              From Pune to global markets, we give shape to narratives that matter.
-            </p>
-          </div>
-
-          {/* Physical Membership Card Graphic */}
-          <div className="mini-membership-card-frame">
-            <div className="mini-card-surface">
-              <div className="mini-card-top">
-                <span className="mini-card-chip">● Pro Plan</span>
-                <span className="mini-card-tag">Arpeggio</span>
-              </div>
-              <div className="mini-card-center">
-                <span className="mini-card-brand">Arpeggio</span>
-              </div>
-              <div className="mini-card-bottom">
-                <span>image style in color</span>
-              </div>
-            </div>
+          <div className="closing-action-group">
+            <button
+              className="closing-cta-link group"
+              onClick={() => scrollManager.scrollToSection('contact-section')}
+            >
+              <span className="cta-link-text">Begin Your Project</span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="cta-arrow-svg"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

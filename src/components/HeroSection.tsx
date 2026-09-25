@@ -7,128 +7,150 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDossier }) => {
   return (
-    <section id="hero-section" className="prototype-hero-section">
-      {/* Background Ambience & Spotlight Layer */}
-      <div className="hero-spotlight-backdrop">
-        <div className="spotlight-cone-glow" />
+    <section id="hero-section" className="dzinr-hero-manifesto-section">
+      {/* 1. Hero Upper Grid with DZINR Split Intro Kickers */}
+      <div className="hero-top-kicker-strip">
+        <div className="kicker-left-group">
+          <p className="kicker-line-primary">
+            Strategy, Direction, <br className="hidden sm:block" />
+            Performance
+          </p>
+          <p className="kicker-line-secondary">
+            We are a cinematic storytelling studio <br className="hidden sm:block" />
+            that builds unforgettable brand legacies.
+          </p>
+        </div>
+
+        <button
+          className="kicker-scroll-down-btn"
+          onClick={() => scrollManager.scrollToSection('manifesto-block')}
+          aria-label="Scroll down to manifesto"
+          title="Scroll Down"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="down-arrow-svg"
+          >
+            <path d="M12 5v14M19 12l-7 7-7-7" />
+          </svg>
+        </button>
       </div>
 
-      <div className="hero-grid-container">
-        {/* Left Monumental Typography & CTA */}
-        <div className="hero-left-column">
-          <div className="hero-story-tagline">
-            <span className="story-pill-text">Story First</span>
-            <span className="story-pill-dot" />
+      {/* 2. Hero Monumental Architectural Headline */}
+      <div className="hero-monumental-stage">
+        {/* Story First Badge */}
+        <div className="story-first-kicker-badge">
+          <span className="story-first-text">Story First</span>
+          <svg
+            className="story-first-swoosh"
+            viewBox="0 0 120 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 8.5C35 2.5 85 3 117 8.5"
+              stroke="#FF2222"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        <h1 className="hero-monumental-title">
+          <span className="title-row">New</span>
+          <span className="title-row font-serif-accent">DESIGN</span>
+          <span className="title-row">
+            Era<span className="text-red-accent">.</span>
+          </span>
+        </h1>
+
+        <p className="hero-manifesto-subtext">
+          Nikunj Storytelling Studio (NST) merges cinematic film direction with
+          uncompromising digital craft. Transforming daring visions into enduring cultural marks.
+        </p>
+
+        {/* Hero Quick Action Buttons */}
+        <div className="hero-actions-row">
+          <button
+            className="hero-btn-primary"
+            onClick={() => scrollManager.scrollToSection('projects-section')}
+          >
+            Explore Projects
+            <span className="btn-arrow-icon">→</span>
+          </button>
+
+          <button
+            className="hero-btn-secondary"
+            onClick={() => onOpenDossier(1)}
+          >
+            Brand Dossier
+            <span className="btn-badge-small">PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. DZINR-Style Editorial Manifesto Statement Block */}
+      <div id="manifesto-block" className="dzinr-manifesto-block">
+        {/* Pill Tag */}
+        <div className="manifesto-pill-tag">
+          <span className="manifesto-icon">[ ! ]</span>
+          <span className="manifesto-tag-text">
+            Be the story they never stop talking about
+          </span>
+        </div>
+
+        {/* Giant Manifesto Statement */}
+        <h2 className="manifesto-statement-text">
+          <span className="manifesto-indent hidden lg:inline-block" />
+          Storytelling in the digital era isn't static anymore. Today's brands need
+          energy, emotion and meaning. We bring together cinematic film direction,
+          architectural design and interactive craft to compose brand legacies that
+          command attention, move fast and make people feel.
+        </h2>
+
+        {/* Dividing Line & Sub-Grid */}
+        <div className="manifesto-split-footer">
+          <div className="manifesto-footer-left">
+            <p className="footer-headline-muted">
+              Designing Iconic <br className="hidden sm:block" />
+              Brand Legacies Daily.
+            </p>
           </div>
 
-          <h1 className="hero-monumental-headline">
-            <span className="headline-line line-regular">New</span>
-            <span className="headline-line line-bold">DESIGN</span>
-            <span className="headline-line line-regular">
-              Era<span className="text-red-accent">.</span>
-            </span>
-          </h1>
-
-          <p className="hero-studio-description">
-            Nikunj Storytelling Studio — where design begins with a question.
-            Transforming brand meaning into enduring visual worlds.
-          </p>
-
-          {/* Prototype Red 'let's Connect ->' Button */}
-          <div className="hero-cta-wrapper">
-            <button
-              className="prototype-lets-connect-btn"
-              onClick={() => scrollManager.scrollToSection('contact-section')}
-            >
-              <span>let's Connect</span>
-              <span className="lets-connect-arrow">↗</span>
-            </button>
+          <div className="manifesto-footer-right">
+            <p className="footer-description-muted">
+              Your brand has a story waiting to be told. We make sure it's seen, felt and
+              remembered across every screen and tactile medium. We design brand identities,
+              direct cinema campaigns, and compose digital experiences that turn casual viewers
+              into devoted advocates.
+            </p>
 
             <button
-              className="hero-dossier-link-btn"
+              className="dzinr-learn-more-btn"
               onClick={() => onOpenDossier(1)}
             >
-              Holy Grail Dossier 📖
+              <span className="btn-label-text">Explore Brand Atelier</span>
+              <svg
+                className="learn-more-arrow"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 11L11 1M11 1H3M11 1V9"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
-          </div>
-        </div>
-
-        {/* Center: "Floating character appearing" in Spotlight Beam */}
-        <div className="hero-center-spotlight-column">
-          <div className="spotlight-beam-visual">
-            <div className="beam-cone" />
-            <div className="beam-glow-pool" />
-
-            {/* Levitating Floating Character from Prototype */}
-            <div className="hero-floating-character-wrapper">
-              <img
-                src="/nst/character/ch1.png"
-                alt="NST Studio Stylized Storyteller Character"
-                className="hero-floating-character-img"
-              />
-              <div className="character-aura-glow" />
-            </div>
-
-            <div className="floating-indicator-label">
-              <span>Floating character</span>
-              <span className="label-arrow">→</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right / Left Floating Editorial Cards from Prototype */}
-        <div className="hero-right-column">
-          {/* Right Floating Card: Scarlet Design Studio Reference */}
-          <div className="floating-scarlet-card">
-            <div className="scarlet-header">
-              <span className="scarlet-tag">2026 · ATELIER</span>
-              <span className="scarlet-badge">Featured System</span>
-            </div>
-            <div className="scarlet-content">
-              <div className="scarlet-title">Scarlet Design Studio®</div>
-              <p className="scarlet-quote">“We blend creativity with precision”</p>
-              <div className="scarlet-footer">
-                <button
-                  className="scarlet-link-btn"
-                  onClick={() => scrollManager.scrollToSection('about-section')}
-                >
-                  About us →
-                </button>
-                <span className="scarlet-sub">Bespoke Production</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Editorial Blog Pill Card on Left (Matching Prototype "Blog.") */}
-      <div className="hero-floating-blog-card">
-        <div className="blog-card-header">
-          <span className="blog-card-heading">Blog<span className="text-red-accent">.</span></span>
-          <span className="blog-card-ref-tag">EDITORIAL</span>
-        </div>
-
-        <div className="blog-card-articles">
-          <div
-            className="blog-article-mini"
-            onClick={() => onOpenDossier(6)}
-          >
-            <div className="article-mini-thumb thumb-1" />
-            <div className="article-mini-text">
-              <span className="mini-title">How to build a visual identity that stands out</span>
-              <span className="mini-read">Read Article ↗</span>
-            </div>
-          </div>
-
-          <div
-            className="blog-article-mini"
-            onClick={() => onOpenDossier(14)}
-          >
-            <div className="article-mini-thumb thumb-2" />
-            <div className="article-mini-text">
-              <span className="mini-title">How to stay relevant in a fast-changing digital world</span>
-              <span className="mini-read">Read Article ↗</span>
-            </div>
           </div>
         </div>
       </div>

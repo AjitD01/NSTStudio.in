@@ -6,25 +6,48 @@ interface LandingAnimationProps {
 
 export const LandingAnimation: React.FC<LandingAnimationProps> = ({ onComplete }) => {
   const [phase, setPhase] = useState<'enter' | 'reveal' | 'exit' | 'done'>('enter');
+  const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    // 1. Reveal "Story First." mark with gentle scale & glow
+    // 1. Reveal letters quickly
     const t1 = setTimeout(() => {
       setPhase('reveal');
-    }, 120);
+    }, 100);
 
-    // 2. Begin curtain lift / opening transition
+    // 2. Smooth 0 to 100 numeric flow counter
+    const startTime = performance.now();
+    const duration = 1200; // 1.2s to reach 100
+
+    let animationFrameId: number;
+    const updateCounter = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Smooth cubic out ease for counter
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentVal = Math.floor(eased * 100);
+      setCount(currentVal);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(updateCounter);
+      } else {
+        setCount(100);
+      }
+    };
+    animationFrameId = requestAnimationFrame(updateCounter);
+
+    // 3. Start curtain upward wipe after counter hits 100 and logo is locked
     const t2 = setTimeout(() => {
       setPhase('exit');
-    }, 1900);
+    }, 1650);
 
-    // 3. Mark complete & unmount
+    // 4. Mark completed and remove from DOM
     const t3 = setTimeout(() => {
       setPhase('done');
       if (onComplete) onComplete();
-    }, 2650);
+    }, 2500);
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
@@ -35,38 +58,51 @@ export const LandingAnimation: React.FC<LandingAnimationProps> = ({ onComplete }
 
   return (
     <aside
-      className={`nst-opening-curtain ${phase === 'exit' ? 'curtain-exit' : ''}`}
+      className={`lyniq-landing-curtain ${phase === 'exit' ? 'curtain-exit' : ''}`}
       aria-label="Loading NST Studio"
       aria-live="polite"
       aria-busy={phase === 'enter' || phase === 'reveal'}
     >
-      <div className="opening-curtain-inner">
-        {/* Prototype: "Story First." with red brush swoosh and red dot */}
-        <div className={`opening-tag-mark ${phase === 'reveal' ? 'mark-visible' : ''}`}>
-          <div className="story-first-hero-title">
-            <span>Story First</span>
-            <span className="story-first-dot">.</span>
-          </div>
+      {/* Top Bar Indicator (DZINR Style) */}
+      <div className="curtain-top-bar">
+        <span className="curtain-studio-code">NST® // ARCHIVE 2025</span>
+        <span className="curtain-status-pill">INITIATING STUDIO</span>
+      </div>
 
-          <div className="story-first-brush-wrapper">
-            <svg
-              className="story-first-brush-svg"
-              viewBox="0 0 240 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4 14C60 6 180 6 236 14"
-                stroke="#FF2222"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
+      {/* Center Kinetic Typography */}
+      <div className="curtain-content">
+        <div className="kinetic-logo-row">
+          <div className="letter-mask">
+            <span className="kinetic-letter letter-1">N</span>
           </div>
+          <div className="letter-mask">
+            <span className="kinetic-letter letter-2">S</span>
+          </div>
+          <div className="letter-mask">
+            <span className="kinetic-letter letter-3">T</span>
+          </div>
+          <div className="letter-mask">
+            <span className="kinetic-reg">®</span>
+          </div>
+        </div>
 
-          <div className="opening-subtitle-studio">
-            NIKUNJ STORYTELLING STUDIO
-          </div>
+        <div className="kinetic-tagline">
+          <span>CINEMATIC STORY STUDIO</span>
+        </div>
+      </div>
+
+      {/* Bottom DZINR-Style Numeric Flow Counter (00 - 100) */}
+      <div className="curtain-bottom-bar">
+        <div className="curtain-counter-box">
+          <span className="curtain-counter-number">
+            {count < 10 ? `0${count}` : count}
+          </span>
+          <span className="curtain-counter-unit">%</span>
+        </div>
+
+        <div className="curtain-meta-info">
+          <span className="curtain-meta-line">STRATEGY • DIRECTION • CRAFT</span>
+          <span className="curtain-meta-sub">WORLDWIDE BESPOKE COMMISSIONS</span>
         </div>
       </div>
     </aside>
