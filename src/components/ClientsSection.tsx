@@ -29,10 +29,6 @@ export const ClientsSection: React.FC = () => {
           <h2 className="clients-main-title">
             Our Valued Clients <span className="text-red-accent">.</span>
           </h2>
-          <div className="clients-scroll-note">
-            <span>Automatic scroll on repeat</span>
-            <span className="note-arrow">↑</span>
-          </div>
         </div>
 
         {/* Prototype: 3D Dark Slabs / Marquee Track */}
@@ -50,10 +46,6 @@ export const ClientsSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="clients-swipe-annotation">
-          <span className="swipe-arrow">←</span>
-          <span>swipe animation</span>
-        </div>
       </div>
     </section>
   );

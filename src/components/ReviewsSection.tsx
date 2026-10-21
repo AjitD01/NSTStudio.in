@@ -104,7 +104,6 @@ export const ReviewsSection: React.FC = () => {
               Leave a review
             </button>
 
-            <div className="card-annotation-tag left">SIMILAR style ←</div>
           </div>
 
           {/* Right Active Testimonial Card from Prototype */}
@@ -152,7 +151,6 @@ export const ReviewsSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="card-annotation-tag right">button for review →</div>
           </div>
         </div>
       </div>

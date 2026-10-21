@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { scrollManager } from '../state/scrollStore';
 
+// Upright storyteller poses only: the full set also includes lying, seated and
+// meditating poses, which read as glitches when cycled as a walk.
+const WALK_POSES = [1, 3, 4, 2];
+
 export const CharacterWalker: React.FC = () => {
-  // Walking cycle frame 1 through 8
-  const [frameIndex, setFrameIndex] = useState<number>(1);
+  const [poseIndex, setPoseIndex] = useState<number>(0);
 
   useEffect(() => {
-    // 8 fps walk cycle animation
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const interval = setInterval(() => {
-      setFrameIndex((prev) => (prev % 8) + 1);
-    }, 140);
+      setPoseIndex((prev) => (prev + 1) % WALK_POSES.length);
+    }, 1400);
     return () => clearInterval(interval);
   }, []);
 
@@ -18,17 +21,17 @@ export const CharacterWalker: React.FC = () => {
       <div className="section-container walker-flex-container">
         {/* Walking Stick Character Animation from Prototype */}
         <div className="walker-character-box">
-          <div className="walker-sprite-wrapper">
-            <img
-              src={`/nst/character/ch${frameIndex}_light.png`}
-              alt="NST Walking Storyteller Character"
-              className="walker-sprite-img"
-            />
+          <div className="walker-sprite-wrapper is-walking">
+            {WALK_POSES.map((pose, i) => (
+              <img
+                key={pose}
+                src={`/nst/character/ch${pose}_light.png`}
+                alt={i === 0 ? 'NST storyteller character' : ''}
+                aria-hidden={i === 0 ? undefined : true}
+                className={`walker-sprite-img ${i === poseIndex ? 'is-active' : ''}`}
+              />
+            ))}
             <div className="walker-ground-shadow" />
-          </div>
-          <div className="walker-annotation-label">
-            <span>Walking animation with text</span>
-            <span className="annotation-arrow">←</span>
           </div>
         </div>
 

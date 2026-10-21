@@ -105,14 +105,35 @@ export const OrbitExhibitionCamera: React.FC = () => {
  * Hero Conical Spotlight Beam
  * Dramatic upward conical stage beam radiating in the Hero view from the dark blueprint reference.
  */
+const HERO_FIGURE_ASPECT = 1303 / 1932; // /nst/character/ch8.png
+const HERO_FIGURE_HEIGHT = 3.1;
+
 const HeroSpotlightBeam: React.FC = () => {
   const beamRef = useRef<THREE.Mesh>(null);
   const glowCircleRef = useRef<THREE.Mesh>(null);
+  const figureRef = useRef<THREE.Mesh>(null);
+  const viewport = useThree((state) => state.viewport);
+  const reducedMotion = useMemo(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    []
+  );
+  const figureTexture = useMemo(() => {
+    const texture = new THREE.TextureLoader().load('/nst/character/ch8.png');
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+  }, []);
 
-  useFrame(() => {
+  // Landscape: stage sits right of the headline with the storyteller in the beam.
+  // Portrait: beam stays centred as atmosphere behind the copy, no figure.
+  const isLandscape = viewport.width / viewport.height > 1.15;
+  const stageX = isLandscape ? viewport.width * 0.2 : 0;
+
+  useFrame((state) => {
     const progress = scrollManager.current;
     // Fades smoothly as visitor scrolls past hero section
-    const factor = Math.max(0, 1 - progress * 1.6);
+    // Portrait screens: the beam sits behind the copy, so keep it atmospheric
+    const factor = Math.max(0, 1 - progress * 1.6) * (isLandscape ? 1 : 0.5);
     if (beamRef.current) {
       const mat = beamRef.current.material as THREE.MeshBasicMaterial;
       if (mat) {
@@ -127,10 +148,19 @@ const HeroSpotlightBeam: React.FC = () => {
         glowCircleRef.current.visible = factor > 0.01;
       }
     }
+    if (figureRef.current) {
+      const mat = figureRef.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = Math.max(0, 1 - progress * 1.6);
+      figureRef.current.visible = isLandscape && factor > 0.01;
+      // Weightless float above the light pool
+      const t = reducedMotion ? 0 : state.clock.elapsedTime;
+      figureRef.current.position.y = -0.55 + Math.sin(t * 1.05) * 0.12;
+      figureRef.current.rotation.z = Math.sin(t * 0.6) * 0.025;
+    }
   });
 
   return (
-    <group position={[0, -0.4, -0.2]}>
+    <group position={[stageX, -0.4, -0.2]}>
       {/* Upward expanding conical beam */}
       <mesh ref={beamRef} position={[0, 2.2, 0]}>
         <cylinderGeometry args={[2.5, 0.45, 8.5, 32, 1, true]} />
@@ -153,6 +183,11 @@ const HeroSpotlightBeam: React.FC = () => {
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
+      </mesh>
+      {/* Storyteller silhouette floating in the beam, as in the prototype */}
+      <mesh ref={figureRef} position={[0, -0.55, 0.15]} renderOrder={2}>
+        <planeGeometry args={[HERO_FIGURE_HEIGHT * HERO_FIGURE_ASPECT, HERO_FIGURE_HEIGHT]} />
+        <meshBasicMaterial map={figureTexture} transparent depthWrite={false} toneMapped={false} />
       </mesh>
     </group>
   );

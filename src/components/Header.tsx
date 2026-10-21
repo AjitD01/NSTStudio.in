@@ -98,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenDossier }) => {
             <div className="nav-divider-vertical" />
 
             <a
-              href="https://www.instagram.com"
+              href="https://www.instagram.com/nststudio.in/"
               target="_blank"
               rel="noreferrer"
               className="dzinr-nav-link external-link"
@@ -251,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenDossier }) => {
             <div className="drawer-footer-row">
               <div className="drawer-socials">
                 <a
-                  href="https://www.instagram.com"
+                  href="https://www.instagram.com/nststudio.in/"
                   target="_blank"
                   rel="noreferrer"
                   className="drawer-social-link"

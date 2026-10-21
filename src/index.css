@@ -6604,3 +6604,134 @@ body {
 
 
 
+
+/* ==========================================================================
+   REFINEMENT LAYER — responsive utilities, spacing rhythm, fluid feedback,
+   accessibility fallbacks. Kept last so it settles conflicts above.
+   ========================================================================== */
+
+/* Responsive display utilities used across components (Tailwind-compatible
+   names; Tailwind itself is not installed, so these were previously no-ops). */
+.hidden { display: none !important; }
+
+@media (min-width: 640px) {
+  .sm\:block { display: block !important; }
+  .sm\:flex { display: flex !important; }
+  .sm\:inline-block { display: inline-block !important; }
+}
+
+@media (min-width: 768px) {
+  .md\:block { display: block !important; }
+}
+
+@media (min-width: 1024px) {
+  .lg\:flex { display: flex !important; }
+  .lg\:inline-block { display: inline-block !important; }
+  .lg\:hidden { display: none !important; }
+}
+
+/* Single vertical rhythm: sections no longer stack their own padding on top of
+   the container's, which produced 300–480px dead gaps between sections. */
+.section-container:not(.copyright-inner):not(.footer-inner-grid):not(.prefooter-container) {
+  padding-top: clamp(64px, 8vw, 100px);
+  padding-bottom: clamp(64px, 8vw, 100px);
+  padding-left: clamp(20px, 4vw, 32px);
+  padding-right: clamp(20px, 4vw, 32px);
+}
+
+.prototype-walker-section,
+.prototype-clients-section {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Walking storyteller: cross-fading upright poses with a light step bob */
+.walker-sprite-wrapper .walker-sprite-img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.walker-sprite-wrapper .walker-sprite-img.is-active {
+  opacity: 1;
+}
+
+.walker-sprite-wrapper.is-walking {
+  animation: nst-walk-bob 1.4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes nst-walk-bob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-6px) rotate(1.5deg); }
+}
+
+/* Contact details wrap instead of clipping on narrow cards */
+.direct-reachout-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-width: 0;
+}
+
+.form-bottom-actions {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Zero-latency press feedback */
+.hero-btn-primary:active,
+.hero-btn-secondary:active,
+.dzinr-talk-btn:active,
+.dzinr-learn-more-btn:active,
+.walker-cta-btn:active,
+.prototype-on-you-btn:active,
+.dzinr-mobile-toggle:active,
+.drawer-nav-item:active {
+  transform: scale(0.97);
+  transition: transform 80ms ease-out;
+}
+
+@media (max-width: 1023px) {
+  .header-container {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .walker-flex-container {
+    flex-direction: column;
+    gap: 28px;
+    text-align: center;
+  }
+
+  .walker-question-headline {
+    text-wrap: balance;
+  }
+}
+
+/* Accessibility fallbacks */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .walker-sprite-wrapper.is-walking {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .dzinr-site-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(6, 6, 8, 0.98) !important;
+  }
+}

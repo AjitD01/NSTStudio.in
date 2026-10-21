@@ -38,16 +38,11 @@ export const ContactSection: React.FC = () => {
               />
               <div className="pose-glow" />
             </div>
-            <div className="pose-annotation-label">
-              <span>Character pose animation</span>
-              <span className="label-arrow">→</span>
-            </div>
           </div>
         </div>
 
         {/* Prototype: Transparent / Glassmorphic Card Container */}
         <div className="contact-transparent-card">
-          <div className="card-annotation-tag">Transparent</div>
 
           {isSubmitted ? (
             <div className="contact-success-state">
