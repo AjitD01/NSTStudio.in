@@ -1,111 +1,66 @@
 import React, { useState } from 'react';
-import { scrollManager } from '../state/scrollStore';
+import { navigate } from '../state/router';
+import { LandText } from './LandText';
 
-interface FaqItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-const FAQS_DATA: FaqItem[] = [
+const FAQS = [
   {
-    id: '1',
-    question: 'How long does a project take?',
-    answer:
-      'A comprehensive brand identity engagement typically spans 4 to 6 weeks. This includes immersion, narrative strategy, logomark exploration, color and typography hierarchy, 3D asset generation, and compiling the master brand guideline dossier.',
+    q: 'How long does a project take?',
+    a: 'A brand identity engagement typically spans 4 to 6 weeks: immersion, narrative strategy, logomark exploration, colour and typography, and the final brand guideline.',
   },
   {
-    id: '2',
-    question: 'Can I update the site myself?',
-    answer:
-      'Yes, absolutely. We architect our digital platforms with intuitive content management capabilities, clean component schemas, and comprehensive documentation so your internal team can make continuous updates with confidence.',
+    q: 'Can I update the site myself?',
+    a: 'Yes. We build with clean, documented components and simple content management so your team can keep the site fresh with confidence.',
   },
   {
-    id: '3',
-    question: 'Do I need to have a brand before starting?',
-    answer:
-      'Not at all. In fact, many of our most successful partnerships begin with just an idea or a question: "What is the story?" We build the entire brand from the ground up, uncovering its reason for existing.',
+    q: 'Do I need to have a brand before starting?',
+    a: 'Not at all. Many partnerships begin with just an idea and one question: “What is the story?” We build the brand from the ground up.',
   },
   {
-    id: '4',
-    question: 'What is the Pro Plan membership model?',
-    answer:
-      'Our Pro Plan is a dedicated monthly subscription providing unlimited creative direction across branding, web design, and motion with priority turnaround and no surprise invoices.',
+    q: 'Do you work with clients outside India?',
+    a: 'Yes. We collaborate remotely with brands worldwide and run review loops in your timezone.',
   },
   {
-    id: '5',
-    question: 'Do you collaborate with international clients outside of India?',
-    answer:
-      'Yes! Over 60% of our commissions originate from North America, Europe, the Middle East, and Southeast Asia. We maintain asynchronous Miro and Figma review loops tailored to your local timezone.',
+    q: 'What does a project cost?',
+    a: 'Every story is different. Share a few details through “Begin your Story” and we’ll come back with a tailored proposal.',
   },
 ];
 
 export const FaqSection: React.FC = () => {
-  const [openIds, setOpenIds] = useState<string[]>(['1']);
-
-  const toggleFaq = (id: string) => {
-    if (openIds.includes(id)) {
-      setOpenIds(openIds.filter((item) => item !== id));
-    } else {
-      setOpenIds([...openIds, id]);
-    }
-  };
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section id="faq-section" className="prototype-faq-section">
-      <div className="section-container">
-        <div className="faq-layout-split">
-          {/* Left Column: FAQ Heading & "Your query not here?" Card from Prototype */}
-          <div className="faq-left-column">
-            <h2 className="faq-prototype-heading">FAQ</h2>
+    <section id="faq-section" className="faq">
+      <div className="faq__left" data-reveal>
+        <h2 className="faq__title land-heading">
+          <LandText text="FAQ" />
+        </h2>
+        <div className="query-card">
+          <p className="query-card__text">Your querry<br />not here ?</p>
+          <img className="query-card__figure" src="/nst/character/ch3.png" alt="" aria-hidden="true" />
+          <button className="query-card__btn" onClick={() => navigate('home', 'contact-section')}>Ask your</button>
+        </div>
+      </div>
 
-            <div className="faq-query-card">
-              <p className="query-card-text">Your query not here ?</p>
-              <button
-                className="query-ask-btn"
-                onClick={() => scrollManager.scrollToSection('contact-section')}
-              >
-                <span>Ask your</span>
-                <span className="btn-arrow-icon">→</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column: "Before you start..." + Accordion Rows from Prototype */}
-          <div className="faq-right-column">
-            <h3 className="faq-subhead-text">
-              Before you start, here are some of the <strong>things most clients want to know.</strong>
-            </h3>
-
-            <div className="faq-accordion-container">
-              {FAQS_DATA.map((item) => {
-                const isOpen = openIds.includes(item.id);
-                return (
-                  <div
-                    key={item.id}
-                    className={`prototype-faq-item ${isOpen ? 'open' : ''}`}
-                  >
-                    <button
-                      className="faq-question-row-btn"
-                      onClick={() => toggleFaq(item.id)}
-                      aria-expanded={isOpen}
-                    >
-                      <span className="faq-question-title">{item.question}</span>
-                      <span className="faq-circle-toggle">
-                        {isOpen ? '−' : '+'}
-                      </span>
-                    </button>
-
-                    {isOpen && (
-                      <div className="faq-answer-collapse">
-                        <p className="faq-answer-paragraph">{item.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+      <div className="faq__right" data-reveal style={{ transitionDelay: '450ms' }}>
+        <h3 className="faq__lead">
+          Before you start, here are some of the <span className="muted">things most clients want to know.</span>
+        </h3>
+        {/* Independently scrolling question list ("seperate scroll") */}
+        <div className="faq__list" tabIndex={0} aria-label="Frequently asked questions">
+          {FAQS.map((item, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={item.q} className={`faq-item ${isOpen ? 'is-open' : ''}`}>
+                <button className="faq-item__q" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen}>
+                  <span>{item.q}</span>
+                  <span className="faq-item__icon" aria-hidden="true">+</span>
+                </button>
+                <div className="faq-item__a">
+                  <p>{item.a}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

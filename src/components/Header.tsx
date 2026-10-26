@@ -1,279 +1,106 @@
-import React, { useState } from 'react';
-import { scrollManager } from '../state/scrollStore';
+import React, { useEffect, useState } from 'react';
+import { navigate, type Route } from '../state/router';
 
-interface HeaderProps {
-  onOpenDossier: (page?: number) => void;
-}
+const INSTAGRAM_URL = 'https://www.instagram.com/nststudio.in/';
+const LINKEDIN_URL = 'https://www.linkedin.com';
 
-export const Header: React.FC<HeaderProps> = ({ onOpenDossier }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const MENU_LINKS: { label: string; route: Route; sectionId?: string }[] = [
+  { label: 'Home', route: 'home' },
+  { label: 'Projects', route: 'home', sectionId: 'projects-section' },
+  { label: 'About', route: 'about' },
+  { label: 'Blog', route: 'blog' },
+  { label: 'Contact', route: 'home', sectionId: 'contact-section' },
+];
 
-  const handleNavClick = (sectionId: string) => {
-    scrollManager.scrollToSection(sectionId);
-    setMobileMenuOpen(false);
+export const Header: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  const go = (route: Route, sectionId?: string) => {
+    setMenuOpen(false);
+    navigate(route, sectionId);
   };
 
   return (
     <>
-      <header className="dzinr-site-header">
-        <div className="header-container">
-          {/* 1. Left Brand Monogram Lockup */}
-          <div
-            className="dzinr-brand-lockup cursor-pointer"
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              setMobileMenuOpen(false);
-            }}
-            title="NST Studio - Back to Top"
+      <header className="site-header">
+        <button className="site-header__logo" onClick={() => go('home')} aria-label="NST Studio home">
+          <img src="/proto/logo-light.png" alt="NST Studio" />
+        </button>
+
+        <nav className="site-header__nav" aria-label="Primary">
+          <button className="nav-link" onClick={() => go('blog')}>Blogs</button>
+          <button className="nav-link" onClick={() => go('home', 'services-section')}>Service</button>
+          <span className="nav-link nav-social">
+            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" aria-label="Instagram">In</a>
+            <span className="nav-social__sep">|</span>
+            <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" aria-label="LinkedIn">in</a>
+          </span>
+          {/* "+" icon morphs into "=" on hover, then opens the floating menu */}
+          <button
+            className="menu-toggle"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
           >
-            <div className="brand-logo-symbol">
-              <span className="brand-letters">NST</span>
-              <span className="brand-dot-accent">.</span>
-            </div>
-            <div className="brand-meta-column hidden sm:flex">
-              <span className="brand-studio-title">STORYTELLING STUDIO</span>
-              <span className="brand-status-indicator">
-                <span className="status-dot-live" />
-                AVAILABLE WORLDWIDE
-              </span>
-            </div>
-          </div>
-
-          {/* 2. Center/Right Direct Links with DZINR Roll-up Hover Effect */}
-          <nav className="dzinr-nav-menu hidden lg:flex">
-            <button
-              className="dzinr-nav-link"
-              onClick={() => handleNavClick('projects-section')}
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">Work</span>
-                <span className="rollup-hover">Work</span>
-              </span>
-            </button>
-
-            <button
-              className="dzinr-nav-link"
-              onClick={() => handleNavClick('services-section')}
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">Services</span>
-                <span className="rollup-hover">Services</span>
-              </span>
-            </button>
-
-            <button
-              className="dzinr-nav-link"
-              onClick={() => handleNavClick('what-we-offer')}
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">What We Offer</span>
-                <span className="rollup-hover">What We Offer</span>
-              </span>
-            </button>
-
-            <button
-              className="dzinr-nav-link"
-              onClick={() => onOpenDossier(1)}
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">
-                  Dossier <span className="nav-badge-pdf">PDF</span>
-                </span>
-                <span className="rollup-hover">
-                  Dossier <span className="nav-badge-pdf">PDF</span>
-                </span>
-              </span>
-            </button>
-
-            <button
-              className="dzinr-nav-link"
-              onClick={() => handleNavClick('faq-section')}
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">FAQ</span>
-                <span className="rollup-hover">FAQ</span>
-              </span>
-            </button>
-
-            <div className="nav-divider-vertical" />
-
-            <a
-              href="https://www.instagram.com/nststudio.in/"
-              target="_blank"
-              rel="noreferrer"
-              className="dzinr-nav-link external-link"
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">Instagram</span>
-                <span className="rollup-hover">Instagram</span>
-              </span>
-            </a>
-
-            <a
-              href="https://www.linkedin.com"
-              target="_blank"
-              rel="noreferrer"
-              className="dzinr-nav-link external-link"
-            >
-              <span className="rollup-wrapper">
-                <span className="rollup-text">LinkedIn</span>
-                <span className="rollup-hover">LinkedIn</span>
-              </span>
-            </a>
-          </nav>
-
-          {/* 3. Right Action: DZINR Liquid Wave "Let's Talk" CTA + Mobile Toggle */}
-          <div className="dzinr-actions-group">
-            <button
-              className="dzinr-talk-btn"
-              onClick={() => handleNavClick('contact-section')}
-              aria-label="Let's Talk"
-            >
-              <div className="talk-liquid-wave" aria-hidden="true">
-                <svg
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                  className="wave-svg"
-                >
-                  <path
-                    d="M0,30 Q50,-5 100,30 L100,100 L0,100 Z"
-                    fill="#FF2222"
-                  />
-                </svg>
-              </div>
-              <span className="talk-btn-content">
-                <span className="talk-text">Let's Talk</span>
-                <svg
-                  className="talk-arrow-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                >
-                  <path
-                    d="M5 12h14M12 5l7 7-7 7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-
-            {/* Mobile Hamburger Toggle */}
-            <button
-              className={`dzinr-mobile-toggle lg:hidden ${mobileMenuOpen ? 'open' : ''}`}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation menu"
-            >
-              <span className="toggle-bar bar-1" />
-              <span className="toggle-bar bar-2" />
-            </button>
-          </div>
-        </div>
+            <span className="menu-toggle__bar menu-toggle__bar--a" />
+            <span className="menu-toggle__bar menu-toggle__bar--b" />
+          </button>
+        </nav>
       </header>
 
-      {/* Fullscreen Mobile Drawer (DZINR Inspired) */}
-      {mobileMenuOpen && (
-        <div
-          className="dzinr-mobile-drawer"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <div
-            className="mobile-drawer-inner"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="drawer-header-row">
-              <span className="drawer-brand-label">NST® // MENU</span>
-              <button
-                className="drawer-close-btn"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                ✕
-              </button>
-            </div>
+      {/* Floating "US !" speech bubble → About Us */}
+      <button className="us-bubble" onClick={() => go('about')} aria-label="About Us">
+        <svg viewBox="0 0 120 124" aria-hidden="true">
+          <path d="M60 4a56 56 0 1 1-17 109.4L26 122l5-17A56 56 0 0 1 60 4Z" fill="#FF2222" />
+        </svg>
+        <span>US !</span>
+      </button>
 
-            <div className="drawer-nav-list">
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('hero-section')}
-              >
-                <span className="drawer-num">01</span>
-                <span className="drawer-title">Home</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('projects-section')}
-              >
-                <span className="drawer-num">02</span>
-                <span className="drawer-title">Work & Projects</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('services-section')}
-              >
-                <span className="drawer-num">03</span>
-                <span className="drawer-title">Services</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('what-we-offer')}
-              >
-                <span className="drawer-num">04</span>
-                <span className="drawer-title">What We Offer</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => {
-                  onOpenDossier(1);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <span className="drawer-num">05</span>
-                <span className="drawer-title">Brand Dossier (PDF)</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('faq-section')}
-              >
-                <span className="drawer-num">06</span>
-                <span className="drawer-title">FAQ</span>
-              </button>
-              <button
-                className="drawer-nav-item"
-                onClick={() => handleNavClick('contact-section')}
-              >
-                <span className="drawer-num">07</span>
-                <span className="drawer-title">Contact</span>
-              </button>
-            </div>
-
-            <div className="drawer-footer-row">
-              <div className="drawer-socials">
-                <a
-                  href="https://www.instagram.com/nststudio.in/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="drawer-social-link"
-                >
-                  Instagram ↗
-                </a>
-                <a
-                  href="https://www.linkedin.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="drawer-social-link"
-                >
-                  LinkedIn ↗
-                </a>
-              </div>
-              <span className="drawer-copyright">
-                © 2025 NIKUNJ STORYTELLING STUDIO
-              </span>
+      <div
+        className={`floating-menu ${menuOpen ? 'is-open' : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden={!menuOpen}
+      >
+        <div className="floating-menu__panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Menu">
+          <div className="floating-menu__media">
+            <ul className="floating-menu__links">
+              {MENU_LINKS.map((link, i) => (
+                <li key={link.label} style={{ transitionDelay: `${120 + i * 60}ms` }}>
+                  <button tabIndex={menuOpen ? 0 : -1} onClick={() => go(link.route, link.sectionId)}>
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="floating-menu__aside">
+            <button
+              className="floating-menu__close"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+              tabIndex={menuOpen ? 0 : -1}
+            >
+              <span />
+              <span />
+            </button>
+            <p className="floating-menu__copy">
+              Working with NST means every brand begins with its story. We uncover it,
+              give it direction, and build the visual and verbal world around it.
+            </p>
+            <div className="floating-menu__social">
+              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" tabIndex={menuOpen ? 0 : -1}>Instagram</a>
+              <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" tabIndex={menuOpen ? 0 : -1}>LinkedIn</a>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };

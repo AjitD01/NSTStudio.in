@@ -1,152 +1,70 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { prefersReducedMotion } from '../hooks/useInView';
+import { LandText } from './LandText';
+
+const STUDIO_EMAIL = 'nststudio.in@gmail.com';
+// Storyteller poses cycled beside the heading ("Character pose animation").
+const POSES = ['/nst/character/ch1.png', '/nst/character/ch2.png', '/nst/character/ch3.png', '/nst/character/ch4.png'];
 
 export const ContactSection: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [aboutYou, setAboutYou] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [pose, setPose] = useState(0);
+  const [form, setForm] = useState({ name: '', email: '', whatsapp: '', about: '' });
 
+  useEffect(() => {
+    if (prefersReducedMotion()) return undefined;
+    const id = setInterval(() => setPose((p) => (p + 1) % POSES.length), 1600);
+    return () => clearInterval(id);
+  }, []);
+
+  const update = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  // No backend yet: hand the enquiry to the visitor's mail client, addressed to the studio.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    const body = `Name: ${form.name}\nEmail: ${form.email}\nWhatsapp: ${form.whatsapp}\n\n${form.about}`;
+    window.location.href =
+      `mailto:${STUDIO_EMAIL}?subject=${encodeURIComponent(`Begin your Story — ${form.name}`)}` +
+      `&body=${encodeURIComponent(body)}`;
   };
 
   return (
-    <section id="contact-section" className="prototype-contact-section">
-      <div className="section-container">
-        {/* Prototype Header with Red Dot & Character Pose */}
-        <div className="contact-header-layout">
-          <div className="contact-header-text">
-            <div className="section-tag-kicker">INITIATE COMMISSION</div>
-            <h2 className="section-title-large">
-              Begin your Story<span className="text-red-accent">.</span>
-            </h2>
-            <p className="section-intro-text">
-              Every enduring narrative begins with a question. Tell us about your brand,
-              timeline, and aspirations.
-            </p>
-          </div>
-
-          {/* Prototype: Character Pose Animation */}
-          <div className="contact-character-pose-box">
-            <div className="pose-image-wrapper">
-              <img
-                src="/nst/character/ch4_light.png"
-                alt="NST Character Celebratory Pose"
-                className="pose-character-img"
-              />
-              <div className="pose-glow" />
-            </div>
-          </div>
-        </div>
-
-        {/* Prototype: Transparent / Glassmorphic Card Container */}
-        <div className="contact-transparent-card">
-
-          {isSubmitted ? (
-            <div className="contact-success-state">
-              <div className="success-badge">✓</div>
-              <h3 className="success-heading">Story Initiated with Honor</h3>
-              <p className="success-message">
-                Thank you, <strong>{name}</strong>. The NST creative directors will review your details
-                and connect via <strong>{whatsapp || email}</strong> within 24 business hours.
-              </p>
-              <button
-                className="success-reset-button"
-                onClick={() => setIsSubmitted(false)}
-              >
-                Send Another Inquiry
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="prototype-contact-form">
-              {/* Row 1: Name & Email */}
-              <div className="form-fields-row">
-                <div className="field-underline-item">
-                  <label htmlFor="input-name" className="field-label-prototype">
-                    Name:
-                  </label>
-                  <input
-                    id="input-name"
-                    type="text"
-                    className="field-input-underline"
-                    placeholder="e.g. Anand Mahindra"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="field-underline-item">
-                  <label htmlFor="input-email" className="field-label-prototype">
-                    Email:
-                  </label>
-                  <input
-                    id="input-email"
-                    type="email"
-                    className="field-input-underline"
-                    placeholder="e.g. anand@maison.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Whatsapp / Phone */}
-              <div className="form-fields-row">
-                <div className="field-underline-item full-width">
-                  <label htmlFor="input-whatsapp" className="field-label-prototype">
-                    Whatsapp:
-                  </label>
-                  <input
-                    id="input-whatsapp"
-                    type="tel"
-                    className="field-input-underline"
-                    placeholder="+91 98765 43210"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Row 3: tell about you (Rounded box from Prototype) */}
-              <div className="field-textarea-group">
-                <label htmlFor="input-about" className="field-label-prototype">
-                  tell about you:
-                </label>
-                <textarea
-                  id="input-about"
-                  rows={4}
-                  className="field-input-rounded-box"
-                  placeholder="What is the story behind your idea? What feeling should people carry with them?"
-                  value={aboutYou}
-                  onChange={(e) => setAboutYou(e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Prototype: Bottom Action Row with 'ON YOU' Button */}
-              <div className="form-bottom-actions">
-                <div className="direct-reachout-info">
-                  <span className="direct-mail">✉ nststudio.in@gmail.com</span>
-                  <span className="direct-dot">·</span>
-                  <span className="direct-phone">📞 +91 8651178652</span>
-                  <span className="direct-dot">·</span>
-                  <span className="direct-loc">📍 Pune & Mumbai</span>
-                </div>
-
-                {/* Prototype Button: 'ON YOU' */}
-                <button type="submit" className="prototype-on-you-btn">
-                  <span>ON YOU</span>
-                  <span className="btn-arrow-right">→</span>
-                </button>
-              </div>
-            </form>
-          )}
+    <section id="contact-section" className="contact">
+      <div className="contact__head">
+        <h2 className="heading-xl contact__title land-heading" data-reveal>
+          <LandText text="Begin your Story" />
+          <span className="red-dot land__dot">.</span>
+        </h2>
+        <div className="contact__pose" aria-hidden="true">
+          {POSES.map((src, i) => (
+            <img key={src} src={src} alt="" className={i === pose ? 'is-active' : ''} />
+          ))}
         </div>
       </div>
+
+      <form className="contact__card" onSubmit={handleSubmit} data-reveal>
+        <div className="contact__row">
+          <label className="field">
+            <span>Name:</span>
+            <input type="text" name="name" autoComplete="name" maxLength={120} required value={form.name} onChange={update('name')} />
+          </label>
+          <label className="field">
+            <span>Email:</span>
+            <input type="email" name="email" autoComplete="email" maxLength={160} required value={form.email} onChange={update('email')} />
+          </label>
+        </div>
+        <div className="contact__row">
+          <label className="field">
+            <span>Whatsapp:</span>
+            <input type="tel" name="whatsapp" autoComplete="tel" maxLength={20} pattern="[0-9+()\s-]{6,20}" value={form.whatsapp} onChange={update('whatsapp')} />
+          </label>
+        </div>
+        <label className="field field--area">
+          <span>tell about you</span>
+          <textarea name="about" rows={3} maxLength={2000} required value={form.about} onChange={update('about')} />
+        </label>
+        <button type="submit" className="contact__submit">ON YOU</button>
+      </form>
     </section>
   );
 };
