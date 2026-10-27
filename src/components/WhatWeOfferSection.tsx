@@ -3,40 +3,50 @@ import { LandText } from './LandText';
 
 interface Offer {
   title: string;
+  headline: string;
   description: string;
+  process: string[];
   image: string;
 }
 
 const OFFERS: Offer[] = [
   {
-    title: 'Branding & Identity',
-    description:
-      'We craft bold, memorable brand identities that tell your story and leave a lasting impression. From logos to full brand guidelines, we ensure consistency and impact across all touchpoints.',
-    image: '/proto/offer-branding.jpg',
+    title: 'Complete Branding',
+    headline: 'Build the brand before you build the noise.',
+    description: 'We shape your story into a clear identity people can recognise, trust, and remember.',
+    process: ['Strategy', 'Positioning', 'Naming', 'Logo', 'Visual Identity', 'Brand Guidelines'],
+    image: '/brand/p51_0.jpg',
   },
   {
-    title: 'Web Design &\nDevelopment',
+    title: 'Packaging',
+    headline: 'Let your product tell its story before it is opened.',
     description:
-      'Stunning, high-performance websites tailored to your brand. We design sleek, user-friendly interfaces and develop responsive, fast-loading sites that captivate and convert.',
-    image: '/proto/offer-web.jpg',
+      'We turn brand stories into packaging that attracts attention, communicates value, and stays memorable.',
+    process: ['Packaging Strategy', 'Concept', 'Packaging Design', 'Label Design', 'Product Visuals', 'Print Artwork'],
+    image: '/proto/offer-packaging.jpg',
   },
   {
-    title: 'UI/UX Design',
+    title: 'Campaigns',
+    headline: 'Turn your story into a bigger conversation.',
     description:
-      'Intuitive, human-centered interfaces that feel natural and effortless. We map every journey, prototype every interaction, and design systems that delight and convert.',
-    image: '/proto/offer-uiux.jpg',
+      'We transform ideas into campaigns that capture attention and give your brand something meaningful to say.',
+    process: ['Campaign Strategy', 'Big Idea', 'Creative Direction', 'Film', 'Social', 'Digital Ads', 'Outdoor'],
+    image: '/brand/p45_0.jpg',
   },
   {
-    title: 'Motion & Visual Design',
+    title: 'Content &\nAdvertising',
+    headline: 'Make the right people stop and notice.',
     description:
-      'Kinetic typography, character animation and cinematic visuals that bring your story to life and command attention on every screen.',
-    image: '/brand/p57_0.jpg',
+      'We create everyday communication that keeps your brand relevant, consistent, and connected to its audience.',
+    process: ['Content Strategy', 'Social Media', 'Reels', 'Static Creatives', 'Paid Ads', 'Promotional Content'],
+    image: '/brand/p47_0.jpg',
   },
 ];
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 export const WhatWeOfferSection: React.FC = () => {
-  // The prototype shows "Web Design & Development" as the active row.
-  const [active, setActive] = useState(1);
+  const [active, setActive] = useState(0);
   const offer = OFFERS[active];
 
   return (
@@ -70,11 +80,22 @@ export const WhatWeOfferSection: React.FC = () => {
         </ol>
 
         <div className="offer__card">
-          <p key={offer.title} className="offer__desc">{offer.description}</p>
+          <div key={offer.title} className="offer__detail">
+            <p className="offer__kicker">
+              {pad(active + 1)} — {offer.title.replace('\n', ' ')}
+            </p>
+            <h3 className="offer__headline">{offer.headline}</h3>
+            <p className="offer__desc">{offer.description}</p>
+            <ol className="offer__process" aria-label="Process">
+              {offer.process.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         <div className="offer__media">
-          <img key={offer.image} src={offer.image} alt={offer.title} decoding="async" />
+          <img key={offer.image} src={offer.image} alt={offer.title.replace('\n', ' ')} decoding="async" />
         </div>
       </div>
     </section>

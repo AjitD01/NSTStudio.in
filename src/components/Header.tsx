@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { navigate, type Route } from '../state/router';
-
-const INSTAGRAM_URL = 'https://www.instagram.com/nststudio.in/';
-const LINKEDIN_URL = 'https://www.linkedin.com';
+import { INSTAGRAM_URL, LINKEDIN_URL } from '../data/contact';
 
 const MENU_LINKS: { label: string; route: Route; sectionId?: string }[] = [
   { label: 'Home', route: 'home' },
@@ -38,9 +36,9 @@ export const Header: React.FC = () => {
           <button className="nav-link" onClick={() => go('blog')}>Blogs</button>
           <button className="nav-link" onClick={() => go('home', 'services-section')}>Service</button>
           <span className="nav-link nav-social">
-            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" aria-label="Instagram">In</a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram">In</a>
             <span className="nav-social__sep">|</span>
-            <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" aria-label="LinkedIn">in</a>
+            <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a>
           </span>
           {/* "+" icon morphs into "=" on hover, then opens the floating menu */}
           <button
@@ -95,8 +93,8 @@ export const Header: React.FC = () => {
               give it direction, and build the visual and verbal world around it.
             </p>
             <div className="floating-menu__social">
-              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" tabIndex={menuOpen ? 0 : -1}>Instagram</a>
-              <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" tabIndex={menuOpen ? 0 : -1}>LinkedIn</a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" tabIndex={menuOpen ? 0 : -1}>Instagram</a>
+              <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" tabIndex={menuOpen ? 0 : -1}>LinkedIn</a>
             </div>
           </div>
         </div>

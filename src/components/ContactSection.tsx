@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { prefersReducedMotion } from '../hooks/useInView';
 import { LandText } from './LandText';
-
-const STUDIO_EMAIL = 'nststudio.in@gmail.com';
+import { openWhatsApp } from '../data/contact';
 // Storyteller poses cycled beside the heading ("Character pose animation").
 const POSES = ['/nst/character/ch1.png', '/nst/character/ch2.png', '/nst/character/ch3.png', '/nst/character/ch4.png'];
 
@@ -19,13 +18,18 @@ export const ContactSection: React.FC = () => {
   const update = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  // No backend yet: hand the enquiry to the visitor's mail client, addressed to the studio.
+  // "ON YOU" sends the filled form to the studio's WhatsApp as a pre-written message.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const body = `Name: ${form.name}\nEmail: ${form.email}\nWhatsapp: ${form.whatsapp}\n\n${form.about}`;
-    window.location.href =
-      `mailto:${STUDIO_EMAIL}?subject=${encodeURIComponent(`Begin your Story — ${form.name}`)}` +
-      `&body=${encodeURIComponent(body)}`;
+    const message = [
+      'Begin your Story.',
+      `Name: ${form.name.trim()}`,
+      `Email: ${form.email.trim()}`,
+      `Whatsapp: ${form.whatsapp.trim()}`,
+      'Tell about you:',
+      form.about.trim(),
+    ].join('\n');
+    openWhatsApp(message);
   };
 
   return (
@@ -56,7 +60,7 @@ export const ContactSection: React.FC = () => {
         <div className="contact__row">
           <label className="field">
             <span>Whatsapp:</span>
-            <input type="tel" name="whatsapp" autoComplete="tel" maxLength={20} pattern="[0-9+()\s-]{6,20}" value={form.whatsapp} onChange={update('whatsapp')} />
+            <input type="tel" name="whatsapp" autoComplete="tel" maxLength={20} pattern="[0-9+\(\)\s\-]{6,20}" value={form.whatsapp} onChange={update('whatsapp')} />
           </label>
         </div>
         <label className="field field--area">

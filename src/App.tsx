@@ -15,6 +15,7 @@ import { ClientsSection } from './components/ClientsSection';
 import { Footer, SignOff } from './components/Footer';
 import { BlogPage } from './components/BlogPage';
 import { AboutPage } from './components/AboutPage';
+import { PostPage } from './components/PostPage';
 import { useRoute } from './state/router';
 import { useRevealOnScroll } from './hooks/useInView';
 
@@ -44,7 +45,15 @@ export const App: React.FC = () => {
       <OpeningAnimation />
       <PageTransition />
       <Header />
-      {route === 'blog' ? <BlogPage /> : route === 'about' ? <AboutPage /> : <HomePage />}
+      {route === 'blog' ? (
+        <BlogPage />
+      ) : route === 'post' ? (
+        <PostPage />
+      ) : route === 'about' ? (
+        <AboutPage />
+      ) : (
+        <HomePage />
+      )}
       <Footer />
     </div>
   );

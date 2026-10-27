@@ -1,10 +1,19 @@
 import React from 'react';
 import { LandText } from './LandText';
+import { navigate } from '../state/router';
+import { POSTS } from '../data/blog';
 
-const POSTS = [
-  { title: 'How to build a visual identity that stands out', date: 'Mar 20, 2025', image: '/proto/blog-1.jpg' },
-  { title: 'How to stay relevant in a fast-changing digital world', date: 'Mar 13, 2025', image: '/proto/blog-2.jpg' },
-];
+const ArrowRight = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 12h16m-6-6 6 6-6 6" />
+  </svg>
+);
+
+const ArrowUpRight = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M7 17 17 7M9 7h8v8" />
+  </svg>
+);
 
 export const BlogPage: React.FC = () => (
   <main className="page page--blog">
@@ -20,14 +29,39 @@ export const BlogPage: React.FC = () => (
           you build a powerful, timeless brand.
         </p>
       </div>
-      <div className="blog__grid">
+
+      <div className="blog__list">
         {POSTS.map((post, i) => (
-          <article key={post.title} className="blog-card" data-reveal style={{ transitionDelay: `${350 + i * 120}ms` }}>
-            <div className="blog-card__media">
-              <img src={post.image} alt="" decoding="async" />
+          <article
+            key={post.slug}
+            className="post-card"
+            data-reveal
+            style={{ transitionDelay: `${350 + i * 120}ms` }}
+          >
+            <button className="post-card__media" onClick={() => navigate('post')} aria-label={`Read ${post.title}`}>
+              <img src={post.cover} alt="" decoding="async" />
+            </button>
+            <div className="post-card__body">
+              <p className="post-card__meta">
+                <time dateTime={post.dateISO}>{post.date}</time>
+                <span aria-hidden="true">·</span>
+                <span>{post.readTime}</span>
+              </p>
+              <h2 className="post-card__title">
+                <button onClick={() => navigate('post')}>{post.title}</button>
+              </h2>
+              <p className="post-card__excerpt">{post.excerpt}</p>
+              <div className="post-card__actions">
+                <button className="story-btn" onClick={() => navigate('post')}>
+                  Read the story
+                  <ArrowRight />
+                </button>
+                <a className="linkedin-link" href={post.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                  View on LinkedIn
+                  <ArrowUpRight />
+                </a>
+              </div>
             </div>
-            <h2 className="blog-card__title">{post.title}</h2>
-            <time className="blog-card__date">{post.date}</time>
           </article>
         ))}
       </div>

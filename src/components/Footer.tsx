@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { navigate, type Route } from '../state/router';
-
-const STUDIO_EMAIL = 'nststudio.in@gmail.com';
-const STUDIO_PHONE = '+91 86511 78652';
+import {
+  FACEBOOK_URL,
+  INSTAGRAM_URL,
+  LINKEDIN_URL,
+  STUDIO_EMAIL,
+  STUDIO_PHONE_DISPLAY,
+  WHATSAPP_NUMBER,
+} from '../data/contact';
 
 const PAGE_LINKS: { label: string; route: Route; sectionId?: string }[] = [
   { label: 'About', route: 'about' },
@@ -14,9 +19,9 @@ const PAGE_LINKS: { label: string; route: Route; sectionId?: string }[] = [
 ];
 
 const SOCIAL_LINKS = [
-  { label: 'Instagram', href: 'https://www.instagram.com/nststudio.in/' },
-  { label: 'Facebook', href: 'https://www.facebook.com/share/1HAfkeHAq5/' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com' },
+  { label: 'Instagram', href: INSTAGRAM_URL },
+  { label: 'Facebook', href: FACEBOOK_URL },
+  { label: 'LinkedIn', href: LINKEDIN_URL },
 ];
 
 /** Large logo block + "Hello / Namastey" sign-off — shown on the home page above the footer. */
@@ -88,7 +93,7 @@ export const Footer: React.FC = () => {
           <ul>
             {SOCIAL_LINKS.map((link) => (
               <li key={link.label}>
-                <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                <a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>
               </li>
             ))}
           </ul>
@@ -97,7 +102,7 @@ export const Footer: React.FC = () => {
 
       <div className="footer__bottom" data-reveal>
         <div className="footer__contact">
-          <a href={`tel:${STUDIO_PHONE.replace(/\s/g, '')}`}>{STUDIO_PHONE}</a>
+          <a href={`tel:+${WHATSAPP_NUMBER}`}>{STUDIO_PHONE_DISPLAY}</a>
           <a className="footer__mail" href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a>
           <span className="footer__muted">Pune &amp; Mumbai, Maharashtra, India</span>
         </div>

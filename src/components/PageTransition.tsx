@@ -4,8 +4,13 @@ import { prefersReducedMotion } from '../hooks/useInView';
 
 type Stage = 'idle' | 'land' | 'reveal';
 
-const HASH: Record<Route, string> = { home: '#/', blog: '#/blog', about: '#/about' };
-const LABEL: Record<Route, string> = { home: 'Home.', blog: 'Blog.', about: 'About Us.' };
+const HASH: Record<Route, string> = {
+  home: '#/',
+  blog: '#/blog',
+  about: '#/about',
+  post: '#/blog/transparent-storytelling',
+};
+const LABEL: Record<Route, string> = { home: 'Home.', blog: 'Blog.', about: 'About Us.', post: 'Story First.' };
 
 /**
  * Prototype "Page transition animation": the destination's name drops in letter by

@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 
-export type Route = 'home' | 'blog' | 'about';
+export type Route = 'home' | 'blog' | 'about' | 'post';
 
 const ROUTES: Record<string, Route> = {
   '': 'home',
   '#/': 'home',
   '#/blog': 'blog',
   '#/about': 'about',
+  '#/blog/transparent-storytelling': 'post',
 };
 
 const readRoute = (): Route => ROUTES[window.location.hash] ?? 'home';
 
-/** Hash router: '#/blog' and '#/about' are separate pages, everything else is home. */
+/** Hash router: '#/blog', '#/blog/<post>' and '#/about' are separate pages, everything else is home. */
 export function useRoute(): Route {
   const [route, setRoute] = useState<Route>(readRoute);
 
