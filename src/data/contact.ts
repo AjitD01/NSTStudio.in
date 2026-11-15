@@ -13,6 +13,19 @@ export const LINKEDIN_URL = 'https://www.linkedin.com/company/nststudio/';
 
 /** Opens WhatsApp (app or web) with `message` pre-filled, addressed to the studio. */
 export function openWhatsApp(message: string) {
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  // Use direct api.whatsapp.com endpoint to prevent wa.me tracking-filter/adblock blocks
+  const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+
+  try {
+    // Native anchor click avoids the Chromium window.open('noopener,noreferrer') about:blank bug
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch {
+    window.location.href = url;
+  }
 }
